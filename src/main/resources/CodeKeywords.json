@@ -1,0 +1,324 @@
+[
+  {
+    "applicable": [
+      "c++"
+    ],
+    "tokens": [
+      "and_eq",
+      "asm",
+      "atomic_cancel",
+      "atomic_commit",
+      "atomic_noexcept",
+      "bitand",
+      "bitor",
+      "char16_t",
+      "char32_t",
+      "char8_t",
+      "co_await",
+      "co_return",
+      "co_yield",
+      "compl",
+      "concept",
+      "const_cast",
+      "consteval",
+      "constinit",
+      "decltype",
+      "delete",
+      "dynamic_cast",
+      "explicit",
+      "export",
+      "friend",
+      "mutable",
+      "namespace",
+      "noexcept",
+      "not_eq",
+      "operator",
+      "or_eq",
+      "reflexpr",
+      "reinterpret_cast",
+      "requires",
+      "static_cast",
+      "template",
+      "typeid",
+      "typename",
+      "using",
+      "virtual",
+      "wchar_t",
+      "xor",
+      "xor_eq"
+    ]
+  },
+  {
+    "applicable": [
+      "c"
+    ],
+    "tokens": [
+      "_Alignas",
+      "_Alignof",
+      "_Atomic",
+      "_BitInt",
+      "_Bool",
+      "_Complex",
+      "_Decimal128",
+      "_Decimal32",
+      "_Decimal64",
+      "_Generic",
+      "_Imaginary",
+      "_Noreturn",
+      "_Static_assert",
+      "_Thread_local",
+      "restrict",
+      "typeof",
+      "typeof_unqual"
+    ]
+  },
+  {
+    "applicable": [
+      "c",
+      "c++"
+    ],
+    "tokens": [
+      "alignas",
+      "alignof",
+      "auto",
+      "bool",
+      "constexpr",
+      "extern",
+      "inline",
+      "nullptr",
+      "register",
+      "signed",
+      "sizeof",
+      "static_assert",
+      "struct",
+      "thread_local",
+      "typedef",
+      "union",
+      "unsigned"
+    ]
+  },
+  {
+    "applicable": [
+      "python"
+    ],
+    "tokens": [
+      "False",
+      "None",
+      "True",
+      "as",
+      "async",
+      "await",
+      "del",
+      "elif",
+      "except",
+      "from",
+      "global",
+      "in",
+      "is",
+      "lambda",
+      "nonlocal",
+      "pass",
+      "raise"
+    ]
+  },
+  {
+    "applicable": [
+      "c",
+      "c++",
+      "java"
+    ],
+    "tokens": [
+      "char",
+      "const",
+      "default",
+      "double",
+      "enum",
+      "float",
+      "goto",
+      "int",
+      "long",
+      "short",
+      "static",
+      "switch",
+      "void",
+      "volatile"
+    ]
+  },
+  {
+    "applicable": [
+      "scala"
+    ],
+    "tokens": [
+      "implicit",
+      "match",
+      "null",
+      "object",
+      "override",
+      "sealed",
+      "trait",
+      "type",
+      "val",
+      "var"
+    ]
+  },
+  {
+    "applicable": [
+      "java"
+    ],
+    "tokens": [
+      "boolean",
+      "byte",
+      "implements",
+      "instanceof",
+      "interface",
+      "native",
+      "strictfp",
+      "throws",
+      "transient"
+    ]
+  },
+  {
+    "applicable": [
+      "c++",
+      "java",
+      "scala"
+    ],
+    "tokens": [
+      "catch",
+      "new",
+      "private",
+      "protected",
+      "this",
+      "throw"
+    ]
+  },
+  {
+    "applicable": [
+      "java",
+      "scala"
+    ],
+    "tokens": [
+      "abstract",
+      "extends",
+      "final",
+      "package",
+      "super"
+    ]
+  },
+  {
+    "applicable": [
+      "c",
+      "c++",
+      "java",
+      "python",
+      "scala"
+    ],
+    "tokens": [
+      "else",
+      "for",
+      "if",
+      "return",
+      "while"
+    ]
+  },
+  {
+    "applicable": [
+      "c++",
+      "python"
+    ],
+    "tokens": [
+      "and",
+      "not",
+      "or"
+    ]
+  },
+  {
+    "applicable": [
+      "python",
+      "scala"
+    ],
+    "tokens": [
+      "def",
+      "with",
+      "yield"
+    ]
+  },
+  {
+    "applicable": [
+      "c++",
+      "java"
+    ],
+    "tokens": [
+      "public",
+      "synchronized"
+    ]
+  },
+  {
+    "applicable": [
+      "c",
+      "c++",
+      "java",
+      "scala"
+    ],
+    "tokens": [
+      "case",
+      "do"
+    ]
+  },
+  {
+    "applicable": [
+      "c",
+      "c++",
+      "scala"
+    ],
+    "tokens": [
+      "false",
+      "true"
+    ]
+  },
+  {
+    "applicable": [
+      "c++",
+      "java",
+      "python",
+      "scala"
+    ],
+    "tokens": [
+      "class",
+      "try"
+    ]
+  },
+  {
+    "applicable": [
+      "c",
+      "c++",
+      "java",
+      "python"
+    ],
+    "tokens": [
+      "break",
+      "continue"
+    ]
+  },
+  {
+    "applicable": [
+      "java",
+      "python",
+      "scala"
+    ],
+    "tokens": [
+      "finally",
+      "import"
+    ]
+  },
+  {
+    "applicable": [
+      "java",
+      "python"
+    ],
+    "tokens": [
+      "assert"
+    ]
+  }
+]
+
