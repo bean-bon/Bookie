@@ -2,10 +2,8 @@ package views.helpers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.AwtWindow
-import views.FileDialogAction
 import java.awt.FileDialog
 import java.awt.Frame
-import kotlin.io.path.Path
 
 @Composable
 fun FileDialog(
@@ -30,6 +28,3 @@ fun FileDialog(
     dispose = FileDialog::dispose
 )
 
-fun getPath(uri: String?) = if (uri != null) {
-    Path(uri)
-} else null

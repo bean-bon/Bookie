@@ -1,10 +1,8 @@
 package backend
 
-import views.helpers.getPath
+import backend.extensions.getPath
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.attribute.FileAttribute
 import kotlin.io.path.*
 
 class ProjectInitialiser private constructor() {

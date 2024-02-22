@@ -4,6 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import backend.EventManager
+import views.editor.BDFileTypeDetector
+import java.nio.file.Files
+import java.nio.file.Path
 
 class TextEditorViewModel(
     val openFiles: List<TextEditorEntryFieldModel>,
@@ -11,13 +14,17 @@ class TextEditorViewModel(
 ) {
 
     companion object {
-        val permittedEditorFormats = listOf(
+        private val permittedEditorFormats = listOf(
             "application/rtf",
             "text/markdown",
             "text/plain",
             "text/html",
             "text/css"
         )
+        fun fileAllowedForBookieEditor(file: Path): Boolean =
+            BDFileTypeDetector().probeContentType(file).isNotBlank()
+            || Files.probeContentType(file)?.startsWith("text") == true
+            || Files.probeContentType(file) in permittedEditorFormats
     }
 
     var selectedFile by mutableStateOf(initialFile)

@@ -3,7 +3,6 @@ package backend
 import views.viewmodels.HTMLCompilationModel
 import views.viewmodels.TextEditorEntryFieldModel
 import java.nio.file.Path
-import javax.swing.plaf.nimbus.State
 
 /**
  * This object has some predefined event channels that classes
@@ -16,14 +15,19 @@ object EventManager {
     val createDirectory = StatefulEvent<Path>()
     val openFile = StatefulEvent<Path>()
     val closeFile = StatefulEvent<Path>()
+    val deleteFile = StatefulEvent<Path>()
+    val projectFilesAdded = StatefulEvent<List<Path>>()
+    val projectFilesDeleted = StatefulEvent<List<Path>>()
+    val buildFile = StatefulEvent<Path>()
     val projectDirModified = StatefulEvent<Path?>()
     val titleFlavourTextModified = StatefulEvent<String>()
     val htmlCompiled = StatefulEvent<HTMLCompilationModel>()
     val fileSelected = StatefulEvent<TextEditorEntryFieldModel>()
     val saveFile = StatefulEvent<TextEditorEntryFieldModel>()
 
+    val buildCurrentFile = StatelessEvent()
     val compileProject = StatelessEvent()
-    val buildFile = StatelessEvent()
+    val compileFlaskApp = StatelessEvent()
     val saveSelectedFile = StatelessEvent()
 
     class StatefulEvent<T: Any?> internal constructor() {

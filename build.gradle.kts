@@ -24,9 +24,13 @@ dependencies {
     implementation("org.jetbrains:markdown:0.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("io.insert-koin:koin-compose:$koinVersion")
-    implementation("org.jogamp.gluegen:gluegen-rt-main:2.5.0")
-    implementation("org.jogamp.jogl:jogl-all-main:2.5.0")
-    api("io.github.kevinnzou:compose-webview-multiplatform:1.8.6")
+//    implementation("org.jogamp.gluegen:gluegen-rt-main:2.5.0")
+//    implementation("org.jogamp.jogl:jogl-all-main:2.5.0")
+    // KotlinX virtual HTML.
+    val kotlinxHtmlVersion = "0.11.0"
+//    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
+//    api("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
     // Testing dependencies.
     testImplementation(kotlin("test"))
 }
@@ -56,9 +60,9 @@ compose.desktop {
             jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
         }
 
-        buildTypes.release.proguard {
-            configurationFiles.from("compose-desktop.pro")
-        }
+//        buildTypes.release.proguard {
+//            configurationFiles.from("compose-desktop.pro")
+//        }
 
     }
 }

@@ -14,6 +14,6 @@ fun TextEditorEntryField(
     BasicTextField(
         value = model.textBoxContent,
         modifier = Modifier.padding(10.dp),
-        onValueChange = { new -> model.textBoxContent = new; model.modified = true }
+        onValueChange = { new -> model.textBoxContent = new; model.modified = true },
     )
 }

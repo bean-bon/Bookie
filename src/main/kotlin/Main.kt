@@ -1,26 +1,30 @@
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.*
+import androidx.compose.ui.zIndex
 import backend.*
-import dev.datlag.kcef.KCEF
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.koin.compose.KoinApplication
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.dsl.module
 import views.*
-import views.components.menu.ProjectEditorMenuBar
-import views.components.menu.ProjectSelectionMenuBar
+import views.menu.ProjectEditorMenuBar
+import views.menu.ProjectSelectionMenuBar
 import views.viewmodels.MDOutputViewModel
-import views.helpers.getPath
+import backend.extensions.getPath
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
-import java.io.File
 import java.nio.file.Path
-import kotlin.math.max
 
 class LauncherViewModel: KoinComponent {
 
@@ -119,35 +123,40 @@ private val appModule = module(createdAtStart = true) {
 fun main() = application {
 
     var downloading by remember { mutableStateOf(0f) }
-    var initialised by remember { mutableStateOf(false) }
+    var initialised by remember { mutableStateOf(true) }
     var restartRequired by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-            KCEF.init(builder = {
-                installDir(File("kcef-bundle"))
-                progress {
-                    onDownloading {
-                        downloading = max(it, 0f)
-                    }
-                    onInitialized {
-                        initialised = true
-                    }
-                }
-                settings {
-                    cachePath = File("kcef-cache").absolutePath
-                }
-            }, onError = {
-                it?.printStackTrace()
-            }, onRestartRequired = {
-                restartRequired = true
-            })
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose { KCEF.disposeBlocking() }
-    }
+//    LaunchedEffect(Unit) {
+//        println("Loading KCEF...")
+//        withContext(Dispatchers.IO) {
+//            KCEF.init(builder = {
+//                installDir(File("kcef", "bundle"))
+//                progress {
+//                    onDownloading {
+//                        downloading = max(it, 0f)
+//                        println("KCEF Download: $downloading%")
+//                    }
+//                    onInitialized {
+//                        initialised = true
+//                        println("KCEF initialised")
+//                    }
+//                }
+//                settings {
+//                    cachePath = File("kcef", "cache").absolutePath
+//                }
+//                release(true)
+//            }, onError = {
+//                println("Error thrown")
+//                it?.printStackTrace()
+//            }, onRestartRequired = {
+//                restartRequired = true
+//            })
+//        }
+//    }
+//
+//    DisposableEffect(Unit) {
+//        onDispose { KCEF.disposeBlocking() }
+//    }
 
     Window(
       onCloseRequest = ::exitApplication,
@@ -156,18 +165,38 @@ fun main() = application {
         KoinApplication(application = {
             modules(appModule)
         }) {
-            window.minimumSize = window.preferredSize
-            MenuBar {
-                if (ApplicationData.projectDirectory != null)
-                    ProjectEditorMenuBar(this)
-                else
-                    ProjectSelectionMenuBar(
-                        this,
-                        ApplicationData.launcherViewModel.onNewProject,
-                        ApplicationData.launcherViewModel.onOpenProject
-                    )
+            Box(Modifier.fillMaxSize()) {
+                AnimatedVisibility(
+                    !initialised,
+                    Modifier.zIndex(1f).fillMaxSize(),
+                    exit = fadeOut()
+                ) {
+                    Column(
+                        Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("KCEF is initialising")
+                        LinearProgressIndicator(downloading / 100)
+                    }
+                }
+                AnimatedVisibility(initialised, enter = fadeIn()) {
+                    Box {
+                        window.minimumSize = window.preferredSize
+                        MenuBar {
+                            if (ApplicationData.projectDirectory != null)
+                                ProjectEditorMenuBar(this)
+                            else
+                                ProjectSelectionMenuBar(
+                                    this,
+                                    ApplicationData.launcherViewModel.onNewProject,
+                                    ApplicationData.launcherViewModel.onOpenProject
+                                )
+                        }
+                        Launcher(ApplicationData.launcherViewModel)
+                    }
+                }
             }
-            Launcher(ApplicationData.launcherViewModel)
         }
     }
 
