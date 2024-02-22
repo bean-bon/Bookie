@@ -1,5 +1,6 @@
 package views.editor
 
+import ApplicationData
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.AlertDialog
@@ -248,7 +249,7 @@ private fun file(
 
     ContextMenuArea({
         listOfNotNull(
-            if (path.extension == "bd") {
+            if (path.extension == "bd" && path.parent != ApplicationData.projectDirectory) {
                 ContextMenuItem("Open in browser") {
                     val compiledPath = PathResolver.getCompiledOutputDirectory(path) / "${path.nameWithoutExtension}.html"
                     EventManager.buildFile.publishEvent(path)

@@ -31,9 +31,11 @@ fun ProjectEditorMenuBar(
         Item("Build File", shortcut = KeyShortcut(Key.B, meta = macOS, alt = macOS, shift = !macOS, ctrl = !macOS)) {
             EventManager.buildCurrentFile.publishEvent()
         }
+        val bookieFile = projectEditorModel.selectedFileModel?.file?.extension == "bd"
+        val contentsPage = projectEditorModel.selectedFileModel?.file == ApplicationData.projectDirectory!! / "front_matter.bd"
         Item(
             "Open file in browser",
-            enabled = projectEditorModel.selectedFileModel?.file?.extension == "bd",
+            enabled = bookieFile && !contentsPage,
             shortcut = KeyShortcut(Key.P, meta = macOS, alt = macOS, shift = !macOS, ctrl = !macOS))
         {
             projectEditorModel.selectedFileModel?.let {

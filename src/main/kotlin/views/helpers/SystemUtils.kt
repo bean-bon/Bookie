@@ -19,7 +19,6 @@ object SystemUtils {
         }
     }
     fun openFileWithDefaultApplication(path: Path) {
-        println("opening ")
         ProcessBuilder(
             when (getPlatform()) {
                 OS.WINDOWS -> listOf(path.name)

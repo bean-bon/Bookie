@@ -28,7 +28,6 @@ dependencies {
 //    implementation("org.jogamp.jogl:jogl-all-main:2.5.0")
     // KotlinX virtual HTML.
     val kotlinxHtmlVersion = "0.11.0"
-//    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
 //    api("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
     // Testing dependencies.
@@ -46,7 +45,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "BookieEditor"
+            packageName = "Bookie"
             packageVersion = "1.0.0"
         }
 

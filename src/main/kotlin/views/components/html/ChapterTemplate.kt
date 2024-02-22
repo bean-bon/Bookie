@@ -10,6 +10,7 @@ import backend.html.helpers.PathResolver
 import java.net.URLDecoder
 import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.relativeTo
 
 fun chapterTemplate(
@@ -18,16 +19,19 @@ fun chapterTemplate(
     chapterLinkInformation: ChapterLinkInformation,
     buildFlaskTemplate: Boolean = false
 ) = createHTML().html {
+    val nestedSize = chapterLinkInformation.currentInfo.path.split("/").size
+    val aceRoot = "${"../".repeat(nestedSize - 1)}ace_editor"
+    val isPreview = chapterLinkInformation.currentInfo.index == -1
     head {
-        this.title = "Chapter ${chapterLinkInformation.currentInfo.index} - ${chapterLinkInformation.currentInfo.name}"
+        this.title =
+            if (!isPreview) "Chapter ${chapterLinkInformation.currentInfo.index} - ${chapterLinkInformation.currentInfo.name}"
+            else "Preview of ${getPath(chapterLinkInformation.currentInfo.path)?.nameWithoutExtension ?: "chapter"}"
         meta(name = "viewport", content = "width=device-width, initial-scale=1.0")
         if (codeBlocks.isNotEmpty()) {
             if (buildFlaskTemplate) {
                 link(rel = "stylesheet", href = "{{ url_for('static', filename='ace_editor/css/ace.css') }}", type = LinkType.textCss)
                 script(src = "{{ url_for('static', filename='ace_editor/src/ace.js') }}", type = ScriptType.textJavaScript) {}
             } else {
-                val nestedSize = chapterLinkInformation.currentInfo.path.split("/").size
-                val aceRoot = "${"../".repeat(nestedSize - 1)}ace_editor"
                 link(rel = "stylesheet", href = "$aceRoot/css/ace.css", type = LinkType.textCss)
                 script(src = "$aceRoot/src/ace.js", type = ScriptType.textJavaScript) {}
             }
@@ -54,7 +58,14 @@ fun chapterTemplate(
         }
         div {
             id = "bd-blocks"
-            h1 { +"Chapter ${chapterLinkInformation.currentInfo.index} - ${chapterLinkInformation.currentInfo.name}" }
+            h1 {
+                +(
+                    if (!isPreview)
+                        "Chapter ${chapterLinkInformation.currentInfo.index} - ${chapterLinkInformation.currentInfo.name}"
+                    else
+                        "Preview of ${chapterLinkInformation.currentInfo.name}"
+                )
+            }
             unsafe {
                 raw(compiledHtml)
             }
@@ -62,7 +73,7 @@ fun chapterTemplate(
         if (codeBlocks.isNotEmpty()) {
             script(src =
                 if (buildFlaskTemplate) "{{ url_for('static', filename = 'ace_editor/src/ext-language_tools.js') }}"
-                else "ace_editor/src/ext-language_tools.js") {}
+                else "$aceRoot/src/ext-language_tools.js") {}
             script {
                 unsafe {
                     raw("ace.require(\"ace/ext/language_tools\");\n")
@@ -103,7 +114,7 @@ fun chapterTemplate(
                                     """
                                     const ${it.id}_reset = document.getElementById("reset-${it.id}");
                                     ${it.id}_reset.addEventListener('click', function () {
-                                        replaceAceBlockContents('{{ url_for('static', filename='$filename') }}', $varName)
+                                        replaceAceBlockContents('{{ url_for("static", filename="$filename") }}', $varName)
                                     });
                                     """.trimIndent()
                                 }
@@ -142,14 +153,15 @@ fun chapterTemplate(
                     }
                 }
             }
-            pre {
-                id = "contents-page"
-                val nestedSize = currentPath.toString().split("/").size
-                val contentsString =
-                    if (buildFlaskTemplate) "/"
-                    else "${"../".repeat(nestedSize - 1)}index.html"
-                a(href = contentsString) {
-                    +"Contents Page"
+            if (!isPreview) {
+                pre {
+                    id = "contents-page"
+                    val contentsString =
+                        if (buildFlaskTemplate) "/"
+                        else "${"../".repeat(nestedSize - 1)}index.html"
+                    a(href = contentsString) {
+                        +"Contents Page"
+                    }
                 }
             }
         }

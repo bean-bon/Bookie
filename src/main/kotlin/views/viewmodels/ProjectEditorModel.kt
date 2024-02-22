@@ -6,7 +6,10 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import backend.EventManager
+import backend.extensions.getPath
+import backend.helpers.decompressZipFile
 import backend.html.BookieCompiler
+import backend.html.ChapterInformation
 import backend.html.ChapterLinkInformation
 import backend.html.helpers.PathResolver
 import org.koin.core.component.KoinComponent
@@ -74,16 +77,28 @@ class ProjectEditorModel(
      * be favoured.
      */
     private fun buildFile(path: Path) {
-//        val template = this::class.java.getResourceAsStream("/CompiledBookieTemplate.html")
-//            ?.bufferedReader()?.readText() ?: ""
+        val outFolder = ApplicationData.projectDirectory!! / "out"
+        val relativePath = PathResolver.getRelativeFilePath(path)
+        if (!outFolder.exists()) {
+            Files.createDirectories(outFolder)
+            EventManager.projectFilesAdded.publishEvent(listOf(outFolder))
+        }
         BookieCompiler(openFiles).buildFile(
             path,
             outputRoot = ApplicationData.projectDirectory!! / "out",
-            relativeOutputPath = path.relativeTo(ApplicationData.projectDirectory!!),
-            chapterLinkInformation = ChapterLinkInformation.empty
+            relativeOutputPath = (relativePath.parent ?: relativePath) / "${path.nameWithoutExtension}.html",
+            chapterLinkInformation = ChapterLinkInformation(
+                null,
+                ChapterInformation(relativePath.toString(), path.name, -1, ""),
+                null
+            )
         )?.let {
                 EventManager.htmlCompiled.publishEvent(it)
             }
+        if (!(ApplicationData.projectDirectory!! / "out" / "ace_editor").exists()) {
+            decompressZipFile("ace_editor.zip", ApplicationData.projectDirectory!! / "out")
+            EventManager.projectFilesAdded.publishEvent(listOf(outFolder / "ace_editor"))
+        }
     }
 
     @OptIn(ExperimentalPathApi::class)
@@ -112,6 +127,7 @@ class ProjectEditorModel(
     private fun saveSelectedFile() {
         selectedFileModel?.let {
             EventManager.saveFile.publishEvent(it)
+            EventManager.buildFile.publishEvent(it.file)
         }
     }
 

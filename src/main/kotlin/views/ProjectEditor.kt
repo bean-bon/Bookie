@@ -33,52 +33,29 @@ fun ProjectEditor(
         onLoad()
     }
 
-    Scaffold {
-        SplitView(
-            defaultProportion = 0.7f,
-            minProportion = 0.5f,
-            leftView = {
-                SplitView(
-                    defaultProportion = 0.3f,
-                    minProportion = 0.1f,
-                    maxProportion = 0.4f,
-                    leftView = {
-                        ApplicationData.projectDirectory?.let {
-                            val contents = it.listDirectoryEntries().toMutableStateList()
-                            FileTree(
-                                DirectoryModel(
-                                    it,
-                                    contents
-                                )
-                            )
-                        }
-                    },
-                    rightView = {
-                        TextEditor(
-                            TextEditorViewModel(
-                                initialFile = model.selectedFileModel,
-                                openFiles = model.openFiles.values.toList()
-                            )
-                        )
-                    }
+    SplitView(
+        defaultProportion = 0.3f,
+        minProportion = 0.1f,
+        maxProportion = 0.9f,
+        leftView = {
+            ApplicationData.projectDirectory?.let {
+                val contents = it.listDirectoryEntries().toMutableStateList()
+                FileTree(
+                    DirectoryModel(
+                        it,
+                        contents
+                    )
                 )
-            },
-            rightView = {
-                val outputModel: MDOutputViewModel = koinInject()
-                if (outputModel.hasContent) {
-                    // This had to be disabled because it kept hard crashing
-                    Text("Preview for ${model.selectedFileModel?.file}")
-//                     BookieMDOutput()
-                } else {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("This is meant to be a preview of the file, but I broke it yesterday and was not " +
-                                "able to fix in the time following")
-                    }
-                }
             }
-        )
-    }
+        },
+        rightView = {
+            TextEditor(
+                TextEditorViewModel(
+                    initialFile = model.selectedFileModel,
+                    openFiles = model.openFiles.values.toList()
+                )
+            )
+        }
+    )
+
 }
