@@ -53,6 +53,10 @@ class BDParagraphProvider(
             // Regex matches sequence of "name (path/to/file)".
             val chapterReferences = """\b(\w+)\s+\(([^)]+)\)(?:\s+|\n)*""".toRegex().findAll(paragraph)
             for (ref in chapterReferences) {
+                if (!ref.groupValues[2].endsWith(".bd")) {
+                    visitor.consumeHtml("<strong><p style=\"color: red\">Only .bd files may be chapters</p></strong>")
+                    continue
+                }
                 val path = ChapterInformation(
                     name = ref.groupValues[1],
                     path = ref.groupValues[2],

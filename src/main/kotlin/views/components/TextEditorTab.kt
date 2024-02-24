@@ -1,7 +1,6 @@
 package views.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,10 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import backend.html.helpers.PathResolver
 import views.viewmodels.TextEditorEntryFieldModel
 import kotlin.io.path.name
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextEditorTab(
     model: TextEditorEntryFieldModel,
@@ -27,7 +30,18 @@ fun TextEditorTab(
     onSelect: (TextEditorEntryFieldModel) -> Unit,
     onClose: (TextEditorEntryFieldModel) -> Unit
 ) {
-    Box {
+    TooltipArea(
+        tooltip = {
+            Text(
+                PathResolver.getRelativeFilePath(model.file).toString(),
+                Modifier.padding(2.dp).background(MaterialTheme.colors.surface),
+                color = MaterialTheme.colors.onSurface,
+                fontSize = 12.sp
+            )
+        },
+        tooltipPlacement = TooltipPlacement.ComponentRect(Alignment.BottomCenter),
+        delayMillis = 1000
+    ) {
         val backgroundColour =
             if (selected) MaterialTheme.colors.primarySurface
             else MaterialTheme.colors.secondaryVariant

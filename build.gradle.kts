@@ -12,9 +12,9 @@ group = "ind.beanie"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    google()
     maven("https://jogamp.org/deployment/maven")
 }
 
@@ -24,12 +24,9 @@ dependencies {
     implementation("org.jetbrains:markdown:0.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("io.insert-koin:koin-compose:$koinVersion")
-//    implementation("org.jogamp.gluegen:gluegen-rt-main:2.5.0")
-//    implementation("org.jogamp.jogl:jogl-all-main:2.5.0")
     // KotlinX virtual HTML.
     val kotlinxHtmlVersion = "0.11.0"
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
-//    api("io.github.kevinnzou:compose-webview-multiplatform:1.8.8")
     // Testing dependencies.
     testImplementation(kotlin("test"))
 }
@@ -44,24 +41,10 @@ compose.desktop {
         mainClass = "MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg)
             packageName = "Bookie"
             packageVersion = "1.0.0"
         }
-
-        // Configuration for WebView library
-
-        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED") // recommended but not necessary
-
-        if (System.getProperty("os.name").contains("Mac")) {
-            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
-            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
-        }
-
-//        buildTypes.release.proguard {
-//            configurationFiles.from("compose-desktop.pro")
-//        }
 
     }
 }

@@ -7,10 +7,9 @@ import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBarScope
 import backend.EventManager
 import backend.PreferencePaths
-import backend.PreferencesHandler
+import backend.PreferenceHandler
 import backend.html.helpers.PathResolver
 import org.koin.compose.koinInject
-import org.koin.java.KoinJavaComponent.inject
 import views.helpers.OS
 import views.helpers.SystemUtils
 import views.viewmodels.ProjectEditorModel
@@ -25,17 +24,26 @@ fun ProjectEditorMenuBar(
     val projectEditorModel: ProjectEditorModel = koinInject()
     val macOS = SystemUtils.getPlatform() == OS.MAC_OS
     Menu("File") {
-        Item("Save File", shortcut = KeyShortcut(Key.S, meta = macOS, ctrl = !macOS)) {
+        val selectedFile = projectEditorModel.selectedFileModel?.file
+        val bookieFileSelected = selectedFile?.extension == "bd"
+        val contentsPage = selectedFile == ApplicationData.projectDirectory!! / "front_matter.bd"
+        Item(
+            "Save File",
+            enabled = selectedFile?.extension == "bd",
+            shortcut = KeyShortcut(Key.S, meta = macOS, ctrl = !macOS)
+        ) {
             EventManager.saveSelectedFile.publishEvent()
         }
-        Item("Build File", shortcut = KeyShortcut(Key.B, meta = macOS, alt = macOS, shift = !macOS, ctrl = !macOS)) {
+        Item(
+            "Build File",
+            enabled = bookieFileSelected && !contentsPage,
+            shortcut = KeyShortcut(Key.B, meta = macOS, alt = macOS, shift = !macOS, ctrl = !macOS))
+        {
             EventManager.buildCurrentFile.publishEvent()
         }
-        val bookieFile = projectEditorModel.selectedFileModel?.file?.extension == "bd"
-        val contentsPage = projectEditorModel.selectedFileModel?.file == ApplicationData.projectDirectory!! / "front_matter.bd"
         Item(
             "Open file in browser",
-            enabled = bookieFile && !contentsPage,
+            enabled = bookieFileSelected && !contentsPage,
             shortcut = KeyShortcut(Key.P, meta = macOS, alt = macOS, shift = !macOS, ctrl = !macOS))
         {
             projectEditorModel.selectedFileModel?.let {
@@ -44,15 +52,17 @@ fun ProjectEditorMenuBar(
                 SystemUtils.openFileWithDefaultApplication(compiledPath)
             }
         }
-        Item("Export Project") {
+    }
+    Menu("Project") {
+        Item("Export locally") {
             EventManager.compileProject.publishEvent()
         }
-        Item("Export Project to Flask") {
+        Item("Export for Flask") {
             EventManager.compileFlaskApp.publishEvent()
         }
         Item("Close Project") {
-            PreferencesHandler.clearPreference(PreferencePaths.user.lastProjectPath)
-            PreferencesHandler.clearPreference(PreferencePaths.user.lastProjectName)
+            PreferenceHandler.clearPreference(PreferencePaths.user.lastProjectPath)
+            PreferenceHandler.clearPreference(PreferencePaths.user.lastProjectName)
             EventManager.projectDirModified.publishEvent(null)
             EventManager.titleFlavourTextModified.publishEvent("")
         }

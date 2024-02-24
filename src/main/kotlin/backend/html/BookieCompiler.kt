@@ -13,6 +13,7 @@ import views.components.html.chapterTemplate
 import backend.extensions.getPath
 import backend.helpers.readTextFromResource
 import backend.html.helpers.GenerationTracker
+import backend.model.FileStorage
 import views.viewmodels.HTMLCompilationModel
 import views.viewmodels.TextEditorEntryFieldModel
 import java.nio.file.Files
@@ -49,7 +50,9 @@ class BookieCompiler(
                     StandardCopyOption.REPLACE_EXISTING
                 )
             }
-            if (model.fileResources.isNotEmpty()) EventManager.projectFilesAdded.publishEvent(model.fileResources)
+            if (model.fileResources.isNotEmpty()) EventManager.projectFilesAdded.publishEvent(
+                model.fileResources.map { FileStorage.makeTree(it) }
+            )
         }
 
         /**
@@ -69,7 +72,9 @@ class BookieCompiler(
                     StandardCopyOption.REPLACE_EXISTING
                 )
             }
-            if (model.fileResources.isNotEmpty()) EventManager.projectFilesAdded.publishEvent(model.fileResources)
+            if (model.fileResources.isNotEmpty()) EventManager.projectFilesAdded.publishEvent(
+                model.fileResources.map { FileStorage.makeTree(it) }
+            )
         }
     }
 
@@ -84,7 +89,9 @@ class BookieCompiler(
             }
             if (!(outputPath / "static" / "ace_editor").exists())
                 decompressZipFile("ace_editor.zip", outputPath / "static")
-            EventManager.projectFilesAdded.publishEvent(listOf(outputPath, *chapterModels.keys.toTypedArray()))
+            EventManager.projectFilesAdded.publishEvent(
+                listOf(FileStorage.makeTree(outputPath)) + chapterModels.keys.map { FileStorage.makeTree(it) }
+            )
             val appFile = buildFlaskIndexFile(chapterModels.values.toList())
             (outputPath / "app.py").writeText(appFile)
             val filesToCopy = listOf(
@@ -107,7 +114,9 @@ class BookieCompiler(
             }
             if (!(outputPath / "ace_editor").exists())
                 decompressZipFile("ace_editor.zip", outputPath)
-            EventManager.projectFilesAdded.publishEvent(listOf(outputPath, *chapterModels.keys.toTypedArray()))
+            EventManager.projectFilesAdded.publishEvent(
+                listOf(FileStorage.makeTree(outputPath)) + chapterModels.keys.map { FileStorage.makeTree(it) }
+            )
         }
         return outputPath / "index.html"
     }

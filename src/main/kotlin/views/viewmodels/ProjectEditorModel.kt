@@ -6,17 +6,17 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import backend.EventManager
-import backend.extensions.getPath
 import backend.helpers.decompressZipFile
 import backend.html.BookieCompiler
 import backend.html.ChapterInformation
 import backend.html.ChapterLinkInformation
 import backend.html.helpers.PathResolver
 import org.koin.core.component.KoinComponent
+import backend.model.FileModel
+import backend.model.FileStorage
 //import backend.parsing.flavour.parseExtendedSyntax
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import kotlin.io.path.*
 
 class ProjectEditorModel(
@@ -27,6 +27,7 @@ class ProjectEditorModel(
         EventManager.createFile.subscribeToEvents(::createNewFile)
         EventManager.createDirectory.subscribeToEvents(::createNewDirectory)
         EventManager.openFile.subscribeToEvents(::setSelectedFile)
+        EventManager.renameFile.subscribeToEvents(::renameFile)
         EventManager.saveFile.subscribeToEvents(::saveFile)
         EventManager.saveSelectedFile.subscribeToEvents(::saveSelectedFile)
         EventManager.closeFile.subscribeToEvents(::closeFile)
@@ -81,7 +82,7 @@ class ProjectEditorModel(
         val relativePath = PathResolver.getRelativeFilePath(path)
         if (!outFolder.exists()) {
             Files.createDirectories(outFolder)
-            EventManager.projectFilesAdded.publishEvent(listOf(outFolder))
+            EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(outFolder)))
         }
         BookieCompiler(openFiles).buildFile(
             path,
@@ -97,7 +98,32 @@ class ProjectEditorModel(
             }
         if (!(ApplicationData.projectDirectory!! / "out" / "ace_editor").exists()) {
             decompressZipFile("ace_editor.zip", ApplicationData.projectDirectory!! / "out")
-            EventManager.projectFilesAdded.publishEvent(listOf(outFolder / "ace_editor"))
+            EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(outFolder / "ace_editor")))
+        }
+    }
+
+    private fun renameFile(path: Pair<Path, String>) {
+        val newPath = path.first.parent / path.second
+        Files.move(path.first, newPath)
+        EventManager.projectFilesDeleted.publishEvent(listOf(path.first))
+        // If file is renamed and the tab is open, replace the tab
+        if (openFiles.containsKey(path.first)) {
+            val model = openFiles[path.first]!!
+            openFiles[newPath] = TextEditorEntryFieldModel(newPath, model.textBoxContent, model.modified)
+            closeFile(path.first)
+            selectedFileModel = openFiles[newPath]
+        }
+        EventManager.projectFilesAdded.publishEvent(listOf(FileModel(newPath)))
+        // Check if any open files are a child of the renamed directory.
+        for ((k, v) in openFiles.minus(newPath)) {
+            if (k.startsWith(newPath.parent)) {
+                val wasSelected = k == selectedFileModel?.file
+                val newEntry = newPath.parent / k.name
+                openFiles[newEntry] = TextEditorEntryFieldModel(newEntry.normalize(), v.textBoxContent, v.modified)
+                if (wasSelected) selectedFileModel = openFiles[newEntry]
+                else closeFile(k)
+                EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(newEntry)))
+            }
         }
     }
 
@@ -106,6 +132,9 @@ class ProjectEditorModel(
         if (path.isDirectory()) path.deleteRecursively()
         else path.deleteIfExists()
         closeFile(path)
+        for (mod in openFiles) {
+            if (mod.key.startsWith(path)) closeFile(mod.key)
+        }
         EventManager.projectFilesDeleted.publishEvent(listOf(path))
     }
 
@@ -116,12 +145,12 @@ class ProjectEditorModel(
         val newFile = path.parent / "${path.nameWithoutExtension}.bd"
         Files.createFile(newFile)
         setSelectedFile(newFile)
-        EventManager.projectFilesAdded.publishEvent(listOf(newFile))
+        EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(newFile)))
     }
 
     private fun createNewDirectory(path: Path) {
         Files.createDirectory(path)
-        EventManager.projectFilesAdded.publishEvent(listOf(path))
+        EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(path)))
     }
 
     private fun saveSelectedFile() {
@@ -129,6 +158,10 @@ class ProjectEditorModel(
             EventManager.saveFile.publishEvent(it)
             EventManager.buildFile.publishEvent(it.file)
         }
+    }
+
+    fun saveAllFiles() = openFiles.forEach {
+        EventManager.saveFile.publishEvent(it.value)
     }
 
     private fun saveFile(model: TextEditorEntryFieldModel) {

@@ -21,6 +21,8 @@ import views.menu.ProjectEditorMenuBar
 import views.menu.ProjectSelectionMenuBar
 import views.viewmodels.MDOutputViewModel
 import backend.extensions.getPath
+import org.koin.compose.koinInject
+import org.koin.java.KoinJavaComponent.inject
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
@@ -32,10 +34,10 @@ class LauncherViewModel: KoinComponent {
     val projectEditorModel: ProjectEditorModel by inject()
 
     init {
-        PreferencesHandler.subscribeToPreferenceChange(
+        PreferenceHandler.subscribeToPreferenceChange(
             PreferencePaths.user.lastProjectPath
         ) { ApplicationData.projectDirectory = getPath(it) }
-        ApplicationData.projectDirectory = getPath(PreferencesHandler.readUserPreference(PreferencePaths.user.lastProjectPath))
+        ApplicationData.projectDirectory = getPath(PreferenceHandler.readUserPreference(PreferencePaths.user.lastProjectPath))
         EventManager.projectDirModified.subscribeToEvents { ApplicationData.projectDirectory = it }
     }
 
@@ -80,15 +82,15 @@ fun Launcher(
         } else {
             ProjectEditor(
                 model.projectEditorModel,
-                onLoad = { EventManager.titleFlavourTextModified.publishEvent(PreferencesHandler.projectName() ?: "") },
+                onLoad = { EventManager.titleFlavourTextModified.publishEvent(PreferenceHandler.projectName() ?: "") },
             )
         }
     }
 }
 
 private fun setProjectPreferences(fd: FileDialog) {
-    PreferencesHandler.setUserPreference(PreferencePaths.user.lastProjectName, fd.file)
-    PreferencesHandler.setUserPreference(PreferencePaths.user.lastProjectPath, fd.directory + fd.file)
+    PreferenceHandler.setUserPreference(PreferencePaths.user.lastProjectName, fd.file)
+    PreferenceHandler.setUserPreference(PreferencePaths.user.lastProjectPath, fd.directory + fd.file)
     EventManager.projectDirModified.publishEvent(Path.of(fd.directory, fd.file))
     EventManager.titleFlavourTextModified.publishEvent(fd.file)
 }
@@ -122,82 +124,32 @@ private val appModule = module(createdAtStart = true) {
 
 fun main() = application {
 
-    var downloading by remember { mutableStateOf(0f) }
-    var initialised by remember { mutableStateOf(true) }
-    var restartRequired by remember { mutableStateOf(false) }
-
-//    LaunchedEffect(Unit) {
-//        println("Loading KCEF...")
-//        withContext(Dispatchers.IO) {
-//            KCEF.init(builder = {
-//                installDir(File("kcef", "bundle"))
-//                progress {
-//                    onDownloading {
-//                        downloading = max(it, 0f)
-//                        println("KCEF Download: $downloading%")
-//                    }
-//                    onInitialized {
-//                        initialised = true
-//                        println("KCEF initialised")
-//                    }
-//                }
-//                settings {
-//                    cachePath = File("kcef", "cache").absolutePath
-//                }
-//                release(true)
-//            }, onError = {
-//                println("Error thrown")
-//                it?.printStackTrace()
-//            }, onRestartRequired = {
-//                restartRequired = true
-//            })
-//        }
-//    }
-//
-//    DisposableEffect(Unit) {
-//        onDispose { KCEF.disposeBlocking() }
-//    }
-
     Window(
-      onCloseRequest = ::exitApplication,
+      onCloseRequest = { saveAllOpenFiles(); exitApplication() },
       title = ApplicationData.windowTitle,
     ) {
         KoinApplication(application = {
             modules(appModule)
         }) {
             Box(Modifier.fillMaxSize()) {
-                AnimatedVisibility(
-                    !initialised,
-                    Modifier.zIndex(1f).fillMaxSize(),
-                    exit = fadeOut()
-                ) {
-                    Column(
-                        Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("KCEF is initialising")
-                        LinearProgressIndicator(downloading / 100)
-                    }
+                window.minimumSize = window.preferredSize
+                MenuBar {
+                    if (ApplicationData.projectDirectory != null)
+                        ProjectEditorMenuBar(this)
+                    else
+                        ProjectSelectionMenuBar(
+                            this,
+                            ApplicationData.launcherViewModel.onNewProject,
+                            ApplicationData.launcherViewModel.onOpenProject
+                        )
                 }
-                AnimatedVisibility(initialised, enter = fadeIn()) {
-                    Box {
-                        window.minimumSize = window.preferredSize
-                        MenuBar {
-                            if (ApplicationData.projectDirectory != null)
-                                ProjectEditorMenuBar(this)
-                            else
-                                ProjectSelectionMenuBar(
-                                    this,
-                                    ApplicationData.launcherViewModel.onNewProject,
-                                    ApplicationData.launcherViewModel.onOpenProject
-                                )
-                        }
-                        Launcher(ApplicationData.launcherViewModel)
-                    }
-                }
+                Launcher(ApplicationData.launcherViewModel)
             }
         }
     }
 
+}
+
+private fun saveAllOpenFiles(model: ProjectEditorModel = koinInject()) {
+    model.saveAllFiles()
 }

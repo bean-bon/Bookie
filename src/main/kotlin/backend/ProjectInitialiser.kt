@@ -1,6 +1,7 @@
 package backend
 
 import backend.extensions.getPath
+import backend.helpers.decompressZipFile
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -15,10 +16,7 @@ class ProjectInitialiser private constructor() {
                     projectFolder.deleteRecursively()
                 }
                 Files.createDirectory(projectFolder)
-                val chapters = projectFolder / "Chapters"
-                val images = projectFolder / "Images"
-                Files.createDirectory(chapters)
-                Files.createDirectory(images)
+                decompressZipFile("Project Template.zip", projectFolder)
                 return projectFolder
             }
             return null

@@ -2,7 +2,7 @@ package backend
 
 import java.util.prefs.Preferences
 
-object PreferencesHandler {
+object PreferenceHandler {
 
     private var userPreferences = Preferences.userRoot()
     private var preferenceSubscribers = mutableMapOf<String, MutableList<(String) -> Unit>>()
@@ -47,7 +47,7 @@ object PreferencesHandler {
 
 }
 
-fun PreferencesHandler.projectName(): String? =
+fun PreferenceHandler.projectName(): String? =
     readUserPreference(PreferencePaths.user.lastProjectName)
 
 

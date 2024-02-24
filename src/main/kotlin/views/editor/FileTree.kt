@@ -1,14 +1,17 @@
 package views.editor
 
 import ApplicationData
+import androidx.compose.animation.*
+import androidx.compose.animation.core.EaseInBack
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -17,46 +20,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import backend.EventManager
 import backend.extensions.childCount
+import backend.extensions.getPath
 import backend.html.helpers.PathResolver
+import backend.model.DirectoryModel
+import backend.model.FileStorage
 import views.helpers.ImagePaths
 import views.helpers.SystemUtils
-import backend.extensions.getPath
 import views.viewmodels.TextEditorViewModel
 import java.net.URLDecoder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.spi.FileTypeDetector
 import kotlin.io.path.*
-
-data class DirectoryModel(
-    val path: Path,
-    var contents: SnapshotStateList<Path>
-) {
-    // Theoretically, doing this will recompose the whole file tree any time
-    // the event is received.
-    init {
-        EventManager.projectFilesAdded.subscribeToEvents {
-            val relevantFiles = it.filter { p -> p.parent == path }
-            if (path.isDirectory()) {
-                for (new in relevantFiles) {
-                    if (new !in contents) contents.add(new)
-                }
-            } else {
-                contents = mutableStateListOf(path)
-            }
-        }
-        EventManager.projectFilesDeleted.subscribeToEvents {
-            val relevantFiles = it.filter { p -> p.parent == path }
-            if (path.isDirectory()) {
-                for (new in relevantFiles) {
-                    if (new in contents) contents.remove(new)
-                }
-            } else {
-                contents = mutableStateListOf(path)
-            }
-        }
-    }
-}
+import kotlin.math.sin
 
 @Composable
 fun FileTree(
@@ -66,12 +42,16 @@ fun FileTree(
     var showNewFolderDialog by remember { mutableStateOf(false) }
 
     if (showNewFolderDialog) {
-        createNewFileDialog(
+        fileModificationDialog(
             fileTreeModel.path,
-            directory = true,
+            title = { Text("Create new folder") },
             reservedNames = listOf("ace_editor"),
-            updateVisibility = { showNewFolderDialog = it }
-        )
+            confirmText = "Create folder",
+            modifyExisting = false,
+            onDismissRequest = { showNewFolderDialog = false }
+        ) {
+            EventManager.createDirectory.publishEvent(it)
+        }
     }
 
     // File navigation tree.
@@ -94,26 +74,23 @@ fun FileTree(
                 .horizontalScroll(rememberScrollState())
         ) {
             for (f in fileTreeModel.contents
-                .filter { !it.isHidden() }
-                .sortedWith(compareBy<Path> { !it.isDirectory() }.thenBy { it.name.uppercase() })
+                .filter { !it.isHidden }
+                .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })
             ) {
-                if (f.isDirectory()) {
-                    val contents = mutableStateListOf<Path>().apply {
-                        addAll(f.listDirectoryEntries())
-                    }
+                if (f.isDirectory) {
                     directory(
-                        DirectoryModel(f, contents),
+                        FileStorage.makeTree(f.path) as DirectoryModel,
                         leftPadding = 5.dp,
                     )
                 } else {
-                    file(f, 5.dp)
+                    file(FileStorage.makeTree(f.path), 5.dp)
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun directory(
     model: DirectoryModel,
@@ -125,6 +102,7 @@ private fun directory(
 
     var showNewFileDialog by remember { mutableStateOf(false) }
     var showNewDirectoryDialog by remember { mutableStateOf(false) }
+    var renameDirectory by remember { mutableStateOf(false) }
     var fileForDeletion by remember { mutableStateOf<Path?>(null) }
 
     Box(
@@ -132,23 +110,41 @@ private fun directory(
         contentAlignment = Alignment.CenterStart
     ) {
         if (showNewFileDialog) {
-            createNewFileDialog(
+            fileModificationDialog(
                 model.path,
-                directory = false,
-                updateVisibility = { showNewFileDialog = it }
-            )
+                title = { Text("Create new Bookie file") },
+                confirmText = "Create file",
+                modifyExisting = false,
+                onDismissRequest = { showNewFileDialog = false }
+            ) {
+                EventManager.createFile.publishEvent(it)
+            }
         } else if (showNewDirectoryDialog) {
-            createNewFileDialog(
+            fileModificationDialog(
                 model.path,
-                directory = true,
-                updateVisibility = { showNewDirectoryDialog = it }
-            )
+                title = { Text("Create new folder") },
+                confirmText = "Create folder",
+                modifyExisting = false,
+                onDismissRequest = { showNewDirectoryDialog = false }
+            ) {
+                EventManager.createDirectory.publishEvent(it)
+            }
+        } else if (renameDirectory) {
+            fileModificationDialog(
+                model.path,
+                title = { Text("Rename ${model.path}") },
+                confirmText = "Rename folder",
+                modifyExisting = true,
+                onDismissRequest = { renameDirectory = false }
+            ) {
+                EventManager.renameFile.publishEvent(Pair(model.path, it.name))
+            }
         }
         fileForDeletion?.let {
-            deletionDialog(
-                it,
-                onDismissRequest = { fileForDeletion = null; println("set to null") }
-            )
+            deletionDialog(it) {
+                fileForDeletion = null
+            }
+
         }
         Column {
             ContextMenuArea({
@@ -158,6 +154,9 @@ private fun directory(
                     },
                     ContextMenuItem("New Folder") {
                         showNewDirectoryDialog = true
+                    },
+                    ContextMenuItem("Rename Folder") {
+                        renameDirectory = true
                     },
                     ContextMenuItem(if (isExpanded) "Collapse Folder" else "Open Folder") {
                         isExpanded = !isExpanded
@@ -194,7 +193,9 @@ private fun directory(
                                     }
                                 }
                                 if (resolvedPaths.isNotEmpty()) {
-                                    EventManager.projectFilesAdded.publishEvent(resolvedPaths)
+                                    EventManager.projectFilesAdded.publishEvent(
+                                        resolvedPaths.map { FileStorage.makeTree(it) }
+                                    )
                                 }
                             }
 
@@ -214,18 +215,17 @@ private fun directory(
                     )
                 }
             }
-            if (isExpanded) {
-                for (f in model.contents
-                    .filter { !it.isHidden() }
-                    .sortedWith(compareBy<Path> { !it.isDirectory() }.thenBy { it.name.uppercase() })
-                ) {
-                    if (f.isDirectory()) {
-                        val contents = mutableStateListOf<Path>().apply {
-                            addAll(f.listDirectoryEntries())
+            AnimatedVisibility(isExpanded, Modifier.animateContentSize()) {
+                Column {
+                    for (f in model.contents
+                        .filter { !it.isHidden }
+                        .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })
+                    ) {
+                        if (f.isDirectory) {
+                            directory(FileStorage.makeTree(f.path) as DirectoryModel, leftPadding + 10.dp)
+                        } else {
+                            file(FileStorage.makeTree(f.path), leftPadding + 10.dp)
                         }
-                        directory(DirectoryModel(f, contents), leftPadding + 10.dp)
-                    } else {
-                        file(f, leftPadding + 10.dp)
                     }
                 }
             }
@@ -235,27 +235,41 @@ private fun directory(
 
 @Composable
 private fun file(
-    path: Path,
+    fileModel: FileStorage,
     leftPadding: Dp,
 ) {
 
     var showDeletionDialog by remember { mutableStateOf(false) }
+    var renaming by remember { mutableStateOf(false) }
 
     if (showDeletionDialog) {
-        deletionDialog(path) {
+        deletionDialog(fileModel.path) {
             showDeletionDialog = false
+        }
+    } else if (renaming) {
+        fileModificationDialog(
+            fileModel.path,
+            title = { Text("Rename ${fileModel.path}") },
+            confirmText = "Rename file",
+            modifyExisting = true,
+            onDismissRequest = { renaming = false }
+        ) {
+            EventManager.renameFile.publishEvent(Pair(fileModel.path, it.name))
         }
     }
 
     ContextMenuArea({
-        listOfNotNull(
-            if (path.extension == "bd" && path.parent != ApplicationData.projectDirectory) {
-                ContextMenuItem("Open in browser") {
-                    val compiledPath = PathResolver.getCompiledOutputDirectory(path) / "${path.nameWithoutExtension}.html"
-                    EventManager.buildFile.publishEvent(path)
-                    SystemUtils.openFileWithDefaultApplication(compiledPath)
-                }
-            } else null,
+        (if (fileModel.extension == "bd" && fileModel.parent != ApplicationData.projectDirectory) listOf(
+            ContextMenuItem("Open in browser") {
+                val compiledPath = PathResolver.getCompiledOutputDirectory(fileModel.path) / "${fileModel.nameWithoutExtension}.html"
+                EventManager.buildFile.publishEvent(fileModel.path)
+                SystemUtils.openFileWithDefaultApplication(compiledPath)
+            },
+            ContextMenuItem("Rename File") {
+                renaming = true
+            }
+        ) else listOf()) +
+        listOf(
             ContextMenuItem("Delete File") {
                 showDeletionDialog = true
             }
@@ -264,14 +278,14 @@ private fun file(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = leftPadding).clickable {
-                if (TextEditorViewModel.fileAllowedForBookieEditor(path))
-                    EventManager.openFile.publishEvent(path)
+                if (TextEditorViewModel.fileAllowedForBookieEditor(fileModel.path))
+                    EventManager.openFile.publishEvent(fileModel.path)
                 else
-                    SystemUtils.openFileWithDefaultApplication(path)
+                    SystemUtils.openFileWithDefaultApplication(fileModel.path)
             }
         ) {
             // TODO: add thumbnails for all file types
-            if (true || path.extension == "bd") {
+            if (true || fileModel.extension == "bd") {
                 Image(
                     painter = painterResource(ImagePaths.bookIcon),
                     modifier = Modifier.height(15.dp),
@@ -280,7 +294,7 @@ private fun file(
                 )
             }
             Text(
-                text = path.name,
+                text = fileModel.name,
                 modifier = Modifier
                     .padding(PaddingValues(start = 3.dp)),
                 maxLines = 1,
@@ -291,11 +305,14 @@ private fun file(
 }
 
 @Composable
-private fun createNewFileDialog(
-    directoryPath: Path,
+fun fileModificationDialog(
+    file: Path,
     reservedNames: List<String> = listOf(),
-    directory: Boolean = false,
-    updateVisibility: (Boolean) -> Unit
+    title: @Composable () -> Unit,
+    confirmText: String,
+    modifyExisting: Boolean,
+    onDismissRequest: () -> Unit,
+    onConfirmRequest: (Path) -> Unit
 ) {
 
     var newFileName by remember { mutableStateOf("") }
@@ -303,51 +320,50 @@ private fun createNewFileDialog(
     var startsWithNumber by remember { mutableStateOf(false) }
     var reservedName by remember { mutableStateOf(false) }
 
+    val extension = if (!file.isDirectory()) ".${file.extension}" else ""
+
     AlertDialog(
         modifier = Modifier.zIndex(-1f),
-        title = {
-            Text(
-                "Create a new ${ if (directory) "folder" else "Bookie file" }",
-            )
-        },
+        onDismissRequest = onDismissRequest,
+        title = title,
         text = {
-            Column(Modifier.padding(top = 100.dp)) {
+            Column(Modifier.padding(5.dp)) {
                 TextField(
                     newFileName,
-                    modifier = Modifier.padding(bottom = 5.dp),
+                    singleLine = true,
                     onValueChange = {
                         newFileName = it.replace(".", "")
-                        startsWithNumber = !directory && newFileName.firstOrNull()?.isDigit() == true
                         conflictingNewFileName =
-                            if (directory) (directoryPath / newFileName).exists()
-                            else Path.of(directoryPath.toString(), "$newFileName.bd").exists()
+                            if (modifyExisting) (file.parent / "$newFileName$extension").exists()
+                            else (file / "$newFileName$extension").exists()
+                        startsWithNumber = !file.isDirectory() && newFileName.firstOrNull()?.isDigit() == true
                         reservedName = newFileName in reservedNames
                     }
                 )
                 Text(
-                    if (conflictingNewFileName)
-                        "${ if (directory) "Folder" else "File" } already exists, choose a different name."
-                    else if (reservedName)
-                        "That name is reserved, please choose a different one."
-                    else if (startsWithNumber)
-                        "Chapter file names are not allowed to begin with a number."
+                    if (conflictingNewFileName) "${if (file.isDirectory()) "Folder" else "File"} already exists."
+                    else if (startsWithNumber) "The new name cannot start with a number."
+                    else if (reservedName) "That name is reserved, please choose another."
                     else "",
-                    color = Color(255, 0, 0, if (conflictingNewFileName || reservedName || startsWithNumber) 255 else 0)
+                    color = Color(255, 0, 0, if (conflictingNewFileName || startsWithNumber || reservedName) 255 else 0)
                 )
             }
         },
-        onDismissRequest = { updateVisibility(false) },
-        dismissButton = { Button({ updateVisibility(false) }) { Text("Cancel") } },
+        dismissButton = {
+            Button(onDismissRequest) {
+                Text("Cancel")
+            }
+        },
         confirmButton = {
             Button(
                 {
-                    updateVisibility(false)
-                    if (directory) EventManager.createDirectory.publishEvent(directoryPath / newFileName)
-                    else EventManager.createFile.publishEvent(directoryPath / newFileName)
+                    if (!modifyExisting) onConfirmRequest(file / "$newFileName$extension")
+                    else onConfirmRequest(file.parent / "$newFileName$extension")
+                    onDismissRequest()
                 },
-                enabled = !(newFileName.isEmpty() || conflictingNewFileName || reservedName || startsWithNumber)
+                enabled = !(newFileName.isEmpty() || conflictingNewFileName || startsWithNumber || reservedName)
             ) {
-                Text("Create ${ if (directory) "folder" else "file" }")
+                Text(confirmText)
             }
         }
     )

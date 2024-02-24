@@ -9,11 +9,17 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 
 class TextEditorEntryFieldModel(
-    val file: Path
+    val file: Path,
+    initialTextContent: String? = null,
+    initialModified: Boolean = false
 ) {
 
-    var textBoxContent by mutableStateOf(if (file.exists()) file.readText() else "")
-    var modified by mutableStateOf(false)
+    var textBoxContent by mutableStateOf(
+        initialTextContent ?:
+        if (file.exists()) file.readText()
+        else ""
+    )
+    var modified by mutableStateOf(initialModified)
 
     init {
         EventManager.saveFile.subscribeToEvents {

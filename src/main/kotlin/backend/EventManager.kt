@@ -1,5 +1,6 @@
 package backend
 
+import backend.model.FileStorage
 import views.viewmodels.HTMLCompilationModel
 import views.viewmodels.TextEditorEntryFieldModel
 import java.nio.file.Path
@@ -16,7 +17,8 @@ object EventManager {
     val openFile = StatefulEvent<Path>()
     val closeFile = StatefulEvent<Path>()
     val deleteFile = StatefulEvent<Path>()
-    val projectFilesAdded = StatefulEvent<List<Path>>()
+    val renameFile = StatefulEvent<Pair<Path, String>>()
+    val projectFilesAdded = StatefulEvent<List<FileStorage>>()
     val projectFilesDeleted = StatefulEvent<List<Path>>()
     val buildFile = StatefulEvent<Path>()
     val projectDirModified = StatefulEvent<Path?>()
