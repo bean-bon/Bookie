@@ -4,10 +4,7 @@ import backend.model.ApplicationData
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
@@ -18,8 +15,10 @@ import androidx.compose.ui.unit.dp
 import backend.EventManager
 import backend.extensions.childCount
 import backend.extensions.getPath
+import backend.helpers.readTextFromResource
 import backend.html.helpers.PathResolver
 import backend.model.DirectoryModel
+import backend.model.FileModel
 import backend.model.FileStorage
 import views.helpers.ImagePaths
 import views.helpers.SystemUtils
@@ -56,8 +55,15 @@ fun FileTree(
             ContextMenuItem("New Folder") {
                 showNewFolderDialog = true
             },
+            ContextMenuItem("Refresh Project Contents") {
+                fileTreeModel.refreshContents()
+            },
             if (!(fileTreeModel.path / "front_matter.bd").exists()) ContextMenuItem("Create front matter file") {
                 EventManager.createFile.publishEvent(fileTreeModel.path / "front_matter.bd")
+            } else null,
+            if (!(fileTreeModel.path / "bookie.css").exists()) ContextMenuItem("Regenerate bookie.css") {
+                (fileTreeModel.path / "bookie.css").writeText(readTextFromResource("bookie.css"))
+                EventManager.projectFilesAdded.publishEvent(listOf(FileModel(fileTreeModel.path / "bookie.css")))
             } else null
         )
     }) {
@@ -65,7 +71,7 @@ fun FileTree(
             modifier = Modifier
                 .fillMaxHeight(1f)
                 .fillMaxWidth()
-                .background(Color.Cyan)
+                .background(Color.LightGray)
                 .verticalScroll(rememberScrollState())
                 .horizontalScroll(rememberScrollState())
         ) {

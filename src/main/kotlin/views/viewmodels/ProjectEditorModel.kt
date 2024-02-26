@@ -99,6 +99,7 @@ class ProjectEditorModel(
             decompressZipFile("ace_editor.zip", ApplicationData.projectDirectory!! / "out")
             EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(outFolder / "ace_editor")))
         }
+        EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(ApplicationData.projectDirectory!! / "out")))
     }
 
     private fun renameFile(path: Pair<Path, String>) {

@@ -28,7 +28,7 @@ fun TextEditor(
     // Code editor area.
     Column(modifier = Modifier
         .fillMaxSize()
-        .background(color = Color.LightGray)
+        .background(color = Color.White)
     ) {
         if (model.closingFile) {
             AlertDialog(
@@ -73,7 +73,7 @@ fun TextEditor(
                 }
             )
         }
-        Box(Modifier.fillMaxWidth().background(Color.White)) {
+        Box(Modifier.fillMaxWidth().background(Color.LightGray)) {
             var scrollOffset by remember { mutableStateOf(0f) }
             Row(
                 Modifier
