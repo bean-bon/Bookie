@@ -75,4 +75,13 @@ data class DirectoryModel(
         }
     }
 
+    fun refreshContents() {
+        contents.clear()
+        contents.addAll(
+            path
+            .listDirectoryEntries()
+            .map { FileStorage.makeTree(it) }
+        )
+    }
+
 }

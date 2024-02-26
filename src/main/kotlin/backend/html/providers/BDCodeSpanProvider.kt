@@ -42,18 +42,16 @@ class BDCodeSpanProvider(
                 (mimeType == null || mimeType.contains("text"))
             ) {
                 val contents = referencedFile.readText()
+                val language = fileImportComponents[1]!!.value
                 val blockId = IDCreator.codeBlock.nextId
-                visitor.consumeHtml(
-                    "<button id=\"reset-$blockId\">Reset</button>" +
-                    "<div id=\"$blockId\" class=\"ace\" style=\"height: 200px\">" +
-                            contents +
-                            "</div>\n"
-                )
+
+                makeCodeField(visitor, language, referencedFile.name, blockId, contents)
+
                 codeFilesReferenced.add(referencedFile)
                 codeBlockIDMap.add(
                     CodeBlockHTMLData(
                         id = blockId,
-                        language = fileImportComponents[1]!!.value,
+                        language = language,
                         relativeFilePath = relativePath.toString(),
                         originalCode = null
                     )

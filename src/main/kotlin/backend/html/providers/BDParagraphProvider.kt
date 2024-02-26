@@ -6,7 +6,9 @@ import backend.html.helpers.IDCreator
 import backend.html.helpers.GenerationTracker
 import backend.html.helpers.PathResolver
 import org.intellij.markdown.ast.ASTNode
+import org.intellij.markdown.ast.CompositeASTNode
 import org.intellij.markdown.ast.getTextInNode
+import org.intellij.markdown.ast.impl.ListCompositeNode
 import org.intellij.markdown.html.GeneratingProvider
 import org.intellij.markdown.html.HtmlGenerator
 import java.nio.file.Path
@@ -28,25 +30,35 @@ class BDParagraphProvider(
     var deferredInlineBlocks: MutableMap<String, String>,
     var chapterMarkers: MutableSet<ChapterInformation>? = null,
     private val inlineParagraphProvider: GeneratingProvider,
-    private val buildForFlask: Boolean
+    private val buildForFlask: Boolean,
+    private val onStartProcessing: () -> Unit,
+    private val onQuizSyntaxRecognised: (String) -> Unit
 ): GeneratingProvider {
     override fun processNode(visitor: HtmlGenerator.HtmlGeneratingVisitor, text: String, node: ASTNode) {
         // Check for impure paragraphs.
         val permittedNames = listOf(
-            "TEXT", "WHITE_SPACE", "BR", "EOL",
+            "TEXT", "WHITE_SPACE", "EOL", "BR",
             "SHORT_REFERENCE_LINK", "FULL_REFERENCE_LINK", "INLINE_LINK",
             "(", ")"
         )
+        // Ensures that quiz blocks are only recognised if they are immediately followed by the answer list.
+        onStartProcessing()
         if (!node.children.all { it.type.name in permittedNames }) {
+            if (checkQuizSyntax(text, node)) return
             return inlineParagraphProvider.processNode(visitor, text, node)
         }
         // Add placeholder for deferred paragraph to be replaced after the initial processing.
-        var paragraph = node.children.joinToString("") {
-            if (it.type.name in listOf("TEXT", "WHITE_SPACE", "BR", "EOL", "(", ")")) it.getTextInNode(text)
-            else {
-                val blockId = IDCreator.inlineBlock.nextId
-                deferredInlineBlocks["%%$blockId"] = it.getTextInNode(text).toString()
-                "%%$blockId"
+        var paragraph = ""
+        for (v in node.children) {
+            when (v.type.name) {
+                "TEXT", "WHITE_SPACE", "(", ")", "BR", "EOL" -> {
+                    paragraph += v.getTextInNode(text)
+                }
+                else -> {
+                    val blockId = IDCreator.inlineBlock.nextId
+                    deferredInlineBlocks["%%$blockId"] = v.getTextInNode(text).toString()
+                    paragraph += "%%$blockId"
+                }
             }
         }
         if (chapterMarkers != null) {
@@ -70,10 +82,10 @@ class BDParagraphProvider(
                         ref.groupValues.first(),
                         if (buildForFlask) {
                             val rePath = PathResolver.getRelativeFilePath(getPath(ref.groupValues[2])!!)
-                            "<br><a href=\"{{ url_for('static', filename = '$rePath'}}\">Chapter " +
+                            "<br><a class=\"chapter-definition\" href=\"{{ url_for('static', filename = '$rePath'}}\">Chapter " +
                             "${IDCreator.chapter.currentIndex} - ${ref.groupValues[1]}</a><br>"
                         } else {
-                            "<br><a href=\"${ref.groupValues[2].replace(".bd", ".html")}\">" +
+                            "<br><a class=\"chapter-definition\" href=\"${ref.groupValues[2].replace(".bd", ".html")}\">" +
                             "Chapter ${IDCreator.chapter.currentIndex} - ${ref.groupValues[1]}</a><br>"
                         }
                     )
@@ -86,7 +98,20 @@ class BDParagraphProvider(
             }
         }
         val paragraphID = IDCreator.paragraph.nextId
-        deferredParagraphs["%%$paragraphID"] = paragraph
+        deferredParagraphs["%%$paragraphID"] = "<p>$paragraph</p>"
         visitor.consumeHtml("%%$paragraphID")
+    }
+
+    /**
+     * Looks for the quiz syntax by checking for text starting with "Q:" followed by an EOL,
+     * and then an unordered list with nothing after it.
+     */
+    private fun checkQuizSyntax(text: String, node: ASTNode): Boolean {
+        val potentialQuestion = node.getTextInNode(text)
+        if (potentialQuestion.startsWith("Q:")) {
+            onQuizSyntaxRecognised(potentialQuestion.removePrefix("Q:").trim().toString())
+            return true
+        }
+        return false
     }
 }

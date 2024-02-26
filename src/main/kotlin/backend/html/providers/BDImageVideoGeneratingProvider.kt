@@ -1,6 +1,5 @@
 package backend.html.providers
 
-import ApplicationData
 import backend.html.helpers.IDCreator
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
@@ -14,7 +13,6 @@ import java.net.URLDecoder
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.div
-import kotlin.io.path.relativeTo
 
 /**
  * Alternative implementation of the image provider, wherein videos are also supported.
@@ -95,12 +93,12 @@ class BDImageVideoGeneratingProvider(
             id?.let { "id=\"$it\"" } ?: "",
             "src=\"${makeSourceLink(src.toString())}\"",
             "alt=\"$alt\"",
-            "style=\"width: 95vw; align: center\"",
+            "class=\"figure img-figure\"",
             autoClose = true
         )
         if (asFigure) {
             val caption = id?.let { "Figure {$it}: $alt" } ?: alt
-            visitor.consumeHtml("\n<figcaption>$caption</figcaption>\n")
+            visitor.consumeHtml("\n<figcaption class=\"caption img-figure-caption\">$caption</figcaption>\n")
             visitor.consumeHtml("</figure>\n")
         }
     }
@@ -122,14 +120,14 @@ class BDImageVideoGeneratingProvider(
             id?.let { "id=\"$it\"" } ?: "",
             "src=\"${makeSourceLink(src.toString())}\"",
             "alt=\"$alt\"",
-            "style=\"width: 95vw; align: center\"",
+            "class=\"figure video-figure\"",
             "controls",
             autoClose = true
         )
         visitor.consumeHtml("</p>")
         if (asFigure) {
             val caption = id?.let { "Figure {$it}: $alt" } ?: alt
-            visitor.consumeHtml("\n<figcaption>$caption</figcaption>\n")
+            visitor.consumeHtml("\n<figcaption class=\"caption video-figure-caption\">$caption</figcaption>\n")
             visitor.consumeHtml("</figure>\n")
         }
     }

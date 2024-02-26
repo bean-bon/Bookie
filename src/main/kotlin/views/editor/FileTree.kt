@@ -1,12 +1,9 @@
 package views.editor
 
-import ApplicationData
+import backend.model.ApplicationData
 import androidx.compose.animation.*
-import androidx.compose.animation.core.EaseInBack
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -32,7 +29,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.spi.FileTypeDetector
 import kotlin.io.path.*
-import kotlin.math.sin
 
 @Composable
 fun FileTree(
@@ -90,7 +86,7 @@ fun FileTree(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun directory(
     model: DirectoryModel,
@@ -161,6 +157,9 @@ private fun directory(
                     ContextMenuItem(if (isExpanded) "Collapse Folder" else "Open Folder") {
                         isExpanded = !isExpanded
                     },
+                    ContextMenuItem("Refresh Contents") {
+                        model.refreshContents()
+                    },
                     ContextMenuItem("Delete Folder") {
                         fileForDeletion = model.path
                     }
@@ -192,11 +191,7 @@ private fun directory(
                                         resolvedPaths.add(copyPath)
                                     }
                                 }
-                                if (resolvedPaths.isNotEmpty()) {
-                                    EventManager.projectFilesAdded.publishEvent(
-                                        resolvedPaths.map { FileStorage.makeTree(it) }
-                                    )
-                                }
+                                model.refreshContents()
                             }
 
                         },

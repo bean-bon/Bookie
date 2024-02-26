@@ -24,13 +24,15 @@ import org.intellij.markdown.parser.sequentialparsers.SequentialParserManager
  * @author Benjamin Groom
  */
 class BDMarkdownFlavour(
-    private val compilationData: CompilationData,
+    val compilationData: CompilationData,
     val baseFlavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
     val compileForFlask: Boolean = false
 ) : MarkdownFlavourDescriptor {
 
     override val markerProcessorFactory: MarkerProcessorFactory = baseFlavour.markerProcessorFactory
     override val sequentialParserManager: SequentialParserManager = baseFlavour.sequentialParserManager
+
+    private var activeQuizQuestion: String? = null
 
     override fun createHtmlGeneratingProviders(linkMap: LinkMap, baseURI: URI?): Map<IElementType, GeneratingProvider> {
 
@@ -48,7 +50,7 @@ class BDMarkdownFlavour(
                 baseURI
             ).makeXssSafe(true)
         ) { it.name == "IMAGE" }
-//        println(generatorMap.map { it.key }.joinToString("\n"))
+        println(generatorMap.map { it.key }.joinToString("\n"))
         // Code fence provider.
         setElementGeneratorGivenKeyLambda(
             generatorMap,
@@ -76,9 +78,19 @@ class BDMarkdownFlavour(
                 deferredInlineBlocks = compilationData.deferredInlineBlocks,
                 inlineParagraphProvider = generatorMap[generatorMap.keys.first { it.name == "PARAGRAPH" }]!!,
                 chapterMarkers = compilationData.referencedChapters,
-                buildForFlask = compileForFlask
+                buildForFlask = compileForFlask,
+                onStartProcessing = { activeQuizQuestion = null },
+                onQuizSyntaxRecognised = { activeQuizQuestion = it }
             ),
         ) { it.name == "PARAGRAPH" }
+        setElementGeneratorGivenKeyLambda(
+            generatorMap,
+            BDQuizProvider(
+                { activeQuizQuestion },
+                deferredInlineBlocks = compilationData.deferredInlineBlocks,
+                generatorMap[generatorMap.keys.first { it.name == "UNORDERED_LIST" }]!!
+            )
+        ) { it.name == "UNORDERED_LIST" }
         return generatorMap
     }
 
@@ -89,7 +101,7 @@ class BDMarkdownFlavour(
     ) =
         map.keys.firstOrNull(keyMatch)?.let {
             map[it] = newGeneratingProvider
-        }
+        } ?: println("WARNING: could not find existing Markdown provider")
 
     override fun createInlinesLexer(): MarkdownLexer =
         baseFlavour.createInlinesLexer()

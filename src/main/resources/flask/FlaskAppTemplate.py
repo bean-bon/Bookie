@@ -22,8 +22,7 @@ def contents():
 # API endpoint intended for communicating with my other project RemoteCodeRunner.
 @app.route("/code_runner", methods=["POST"])
 def code_runner():
-    body = request.json()
-    post_req = post(properties.get("CODE_RUNNER_URL"), data=body)
+    post_req = post(properties.get("CODE_RUNNER_URL").data, data=request.form)
     return post_req.json()
 
 

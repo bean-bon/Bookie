@@ -18,16 +18,13 @@ import java.nio.file.Path
 class BDCodeBlockProvider(
     private val codeBlockIDMap: MutableList<CodeBlockHTMLData>
 ): GeneratingProvider {
+
     override fun processNode(visitor: HtmlGenerator.HtmlGeneratingVisitor, text: String, node: ASTNode) {
 
         // Open code block and establish indent size.
         // Here, 8 is used to capture all common indent sizes (i.e. 2 space, 4 space, tab and double tab).
         val indentPrefixSize = node.getTextInNode(text).commonPrefixWith(" ".repeat(8)).length
         val blockID = IDCreator.codeBlock.nextId
-
-        // The content for this div is replaced by CodeMirror in a later
-        // compilation stage.
-        visitor.consumeHtml("""<div id="$blockID" class="ace" style="height: 200px">""")
 
         // Get the children to process, excluding the block terminator.
         var blockChildren = node.children
@@ -57,6 +54,8 @@ class BDCodeBlockProvider(
                 hasContent = true
             }
         }
+
+        makeCodeField(visitor, lang, fileName = null, blockID, codeFound)
 
         // Add the parsed content to the code block list for
         // later compilation.

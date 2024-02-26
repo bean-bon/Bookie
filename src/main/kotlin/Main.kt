@@ -1,13 +1,7 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.*
 import androidx.compose.ui.zIndex
@@ -21,8 +15,10 @@ import views.menu.ProjectEditorMenuBar
 import views.menu.ProjectSelectionMenuBar
 import views.viewmodels.MDOutputViewModel
 import backend.extensions.getPath
+import backend.model.ApplicationData
+import backend.model.ProjectExportDialogModel
 import org.koin.compose.koinInject
-import org.koin.java.KoinJavaComponent.inject
+import views.helpers.FileDialog
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
@@ -63,7 +59,8 @@ class LauncherViewModel: KoinComponent {
 @Composable
 @Preview
 fun Launcher(
-    model: LauncherViewModel
+    model: LauncherViewModel = koinInject(),
+    projectExportDialogModel: ProjectExportDialogModel = koinInject()
 ) {
     MaterialTheme {
         if (ApplicationData.projectDirectory == null) {
@@ -80,13 +77,47 @@ fun Launcher(
                 onOpenProjectDialog = { if (it.file != null) setProjectPreferences(it) }
             )
         } else {
-            ProjectEditor(
-                model.projectEditorModel,
-                onLoad = { EventManager.titleFlavourTextModified.publishEvent(PreferenceHandler.projectName() ?: "") },
-            )
+            Box {
+                projectExportDialogs(projectExportDialogModel)
+                ProjectEditor(
+                    model.projectEditorModel,
+                    onLoad = { EventManager.titleFlavourTextModified.publishEvent(PreferenceHandler.projectName() ?: "") },
+                )
+            }
         }
     }
 }
+
+@Composable
+fun projectExportDialogs(
+    model: ProjectExportDialogModel = koinInject(),
+    modifier: Modifier = Modifier.zIndex(1f)
+) {
+    Box(modifier) {
+        if (model.showLocalExportDialog) {
+            FileDialog(
+                title = "Export your book",
+                mode = FileDialog.SAVE
+            ) {
+                it?.let { p ->
+                    EventManager.compileProject.publishEvent(p)
+                    model.showLocalExportDialog = false
+                }
+            }
+        } else if (model.showFlaskExportDialog) {
+            FileDialog(
+                title = "Export your book as a Flask application",
+                mode = FileDialog.SAVE
+            ) {
+                it?.let { p ->
+                    EventManager.compileFlaskApp.publishEvent(p)
+                    model.showFlaskExportDialog = false
+                }
+            }
+        }
+    }
+}
+
 
 private fun setProjectPreferences(fd: FileDialog) {
     PreferenceHandler.setUserPreference(PreferencePaths.user.lastProjectName, fd.file)
@@ -95,37 +126,18 @@ private fun setProjectPreferences(fd: FileDialog) {
     EventManager.titleFlavourTextModified.publishEvent(fd.file)
 }
 
-object ApplicationData: KoinComponent {
-
-    private var titleBase by mutableStateOf("Bookie Editor")
-    private var flavourText by mutableStateOf<String?>(null)
-    var projectDirectory by mutableStateOf<Path?>(null)
-    val launcherViewModel: LauncherViewModel by inject()
-
-    val windowTitle: String
-        get() =
-            if (!flavourText.isNullOrBlank()) "$titleBase - $flavourText"
-            else titleBase
-
-    init {
-        EventManager.titleFlavourTextModified.subscribeToEvents {
-            flavourText = it
-        }
-    }
-
-}
-
 private val appModule = module(createdAtStart = true) {
     single { LauncherViewModel() }
     single { ProjectSelectionModel() }
     single { MDOutputViewModel() }
     single { ProjectEditorModel(null) }
+    single { ProjectExportDialogModel() }
 }
 
 fun main() = application {
 
     Window(
-      onCloseRequest = { saveAllOpenFiles(); exitApplication() },
+      onCloseRequest = ::exitApplication,
       title = ApplicationData.windowTitle,
     ) {
         KoinApplication(application = {
@@ -137,19 +149,11 @@ fun main() = application {
                     if (ApplicationData.projectDirectory != null)
                         ProjectEditorMenuBar(this)
                     else
-                        ProjectSelectionMenuBar(
-                            this,
-                            ApplicationData.launcherViewModel.onNewProject,
-                            ApplicationData.launcherViewModel.onOpenProject
-                        )
+                        ProjectSelectionMenuBar(this)
                 }
-                Launcher(ApplicationData.launcherViewModel)
+                Launcher()
             }
         }
     }
 
-}
-
-private fun saveAllOpenFiles(model: ProjectEditorModel = koinInject()) {
-    model.saveAllFiles()
 }

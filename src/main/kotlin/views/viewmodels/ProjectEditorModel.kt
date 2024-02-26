@@ -1,6 +1,6 @@
 package views.viewmodels
 
-import ApplicationData
+import backend.model.ApplicationData
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +36,8 @@ class ProjectEditorModel(
         EventManager.buildFile.subscribeToEvents(::buildFile)
         EventManager.htmlCompiled.subscribeToEvents { BookieCompiler.compileModelToFile(it) }
         EventManager.fileSelected.subscribeToEvents { selectedFileModel = it; buildFile(it.file) }
-        EventManager.compileProject.subscribeToEvents { compileProject() }
-        EventManager.compileFlaskApp.subscribeToEvents { compileFlaskApp() }
+        EventManager.compileProject.subscribeToEvents(::compileProject)
+        EventManager.compileFlaskApp.subscribeToEvents(::compileFlaskApp)
     }
 
     var selectedFileModel: TextEditorEntryFieldModel? by mutableStateOf(selected)
@@ -47,26 +47,25 @@ class ProjectEditorModel(
 
     val openFiles = mutableStateMapOf<Path, TextEditorEntryFieldModel>()
 
-    /**
-     *
-     */
-    private fun compileProject(): Boolean {
+    private fun compileProject(outputPath: Path): Boolean {
         val contentsPage = ApplicationData.projectDirectory!! / "front_matter.bd"
         return if (contentsPage.exists()) {
             BookieCompiler(openFiles).exportProject(
                 contentsPage,
-                ApplicationData.projectDirectory!! / "exported"
+                outputPath,
+                bookTitle = outputPath.name
             )
             true
         } else false
     }
 
-    private fun compileFlaskApp(): Boolean {
+    private fun compileFlaskApp(outputPath: Path): Boolean {
         val contentsPage = ApplicationData.projectDirectory!! / "front_matter.bd"
         return if (contentsPage.exists()) {
             BookieCompiler(openFiles).exportProjectToFlask(
                 contentsPage,
-                ApplicationData.projectDirectory!! / "exported_flask"
+                outputPath,
+                bookTitle = outputPath.name
             )
             true
         } else false

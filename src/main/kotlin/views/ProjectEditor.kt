@@ -1,6 +1,6 @@
 package views
 
-import ApplicationData
+import backend.model.ApplicationData
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import views.components.SplitView

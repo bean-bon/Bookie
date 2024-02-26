@@ -1,6 +1,6 @@
 package views.menu
 
-import ApplicationData
+import backend.model.ApplicationData
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
@@ -55,10 +55,10 @@ fun ProjectEditorMenuBar(
     }
     Menu("Project") {
         Item("Export locally") {
-            EventManager.compileProject.publishEvent()
+            EventManager.compileProjectDialog.publishEvent()
         }
         Item("Export for Flask") {
-            EventManager.compileFlaskApp.publishEvent()
+            EventManager.compileFlaskDialog.publishEvent()
         }
         Item("Close Project") {
             PreferenceHandler.clearPreference(PreferencePaths.user.lastProjectPath)

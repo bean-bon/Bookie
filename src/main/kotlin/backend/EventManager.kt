@@ -24,12 +24,14 @@ object EventManager {
     val projectDirModified = StatefulEvent<Path?>()
     val titleFlavourTextModified = StatefulEvent<String>()
     val htmlCompiled = StatefulEvent<HTMLCompilationModel>()
+    val compileProject = StatefulEvent<Path>()
+    val compileFlaskApp = StatefulEvent<Path>()
     val fileSelected = StatefulEvent<TextEditorEntryFieldModel>()
     val saveFile = StatefulEvent<TextEditorEntryFieldModel>()
 
+    val compileProjectDialog = StatelessEvent()
+    val compileFlaskDialog = StatelessEvent()
     val buildCurrentFile = StatelessEvent()
-    val compileProject = StatelessEvent()
-    val compileFlaskApp = StatelessEvent()
     val saveSelectedFile = StatelessEvent()
 
     class StatefulEvent<T: Any?> internal constructor() {

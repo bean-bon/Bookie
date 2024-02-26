@@ -1,6 +1,6 @@
 package backend.html
 
-import ApplicationData
+import backend.model.ApplicationData
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import backend.EventManager
 import backend.helpers.decompressZipFile
@@ -38,6 +38,7 @@ class BookieCompiler(
          * of a single compiled document to a corresponding file.
          */
         fun compileModelToFile(model: HTMLCompilationModel) {
+            EventManager.projectFilesDeleted.publishEvent(listOf(model.outputRoot))
             val filePath = model.outputRoot / model.relativeOutputPath
             Files.createDirectories(filePath.parent)
             filePath.writeText(model.html)
@@ -50,9 +51,20 @@ class BookieCompiler(
                     StandardCopyOption.REPLACE_EXISTING
                 )
             }
+            // Copy standard CSS.
+            val standardCSSPath = ApplicationData.projectDirectory!! / "bookie.css"
+            val outputPath = model.outputRoot / "bookie.css"
+            if (standardCSSPath.exists()) {
+                Files.copy(
+                    standardCSSPath,
+                    outputPath,
+                    StandardCopyOption.REPLACE_EXISTING
+                )
+            }
             if (model.fileResources.isNotEmpty()) EventManager.projectFilesAdded.publishEvent(
                 model.fileResources.map { FileStorage.makeTree(it) }
             )
+
         }
 
         /**
@@ -60,6 +72,7 @@ class BookieCompiler(
          * project structure.
          */
         fun compileModelToFlask(model: HTMLCompilationModel) {
+            EventManager.projectFilesDeleted.publishEvent(listOf(model.outputRoot))
             val filePath = model.outputRoot / "templates" / model.relativeOutputPath
             Files.createDirectories(filePath.parent)
             filePath.writeText(model.html)
@@ -75,6 +88,17 @@ class BookieCompiler(
             if (model.fileResources.isNotEmpty()) EventManager.projectFilesAdded.publishEvent(
                 model.fileResources.map { FileStorage.makeTree(it) }
             )
+            // Copy standard CSS.
+            val standardCSSPath = ApplicationData.projectDirectory!! / "bookie.css"
+            val outputPath = model.outputRoot / "static" / "bookie.css"
+            if (standardCSSPath.exists()) {
+                Files.createDirectories(outputPath.parent)
+                Files.copy(
+                    standardCSSPath,
+                    outputPath,
+                    StandardCopyOption.REPLACE_EXISTING
+                )
+            }
         }
     }
 
@@ -158,7 +182,7 @@ class BookieCompiler(
             referencedChapters = mutableSetOf()
         )
         val bdMarkdownFlavour = BDMarkdownFlavour(compilationData)
-        val initialProcessing = firstRoundProcess(text, bdMarkdownFlavour, compilationData)
+        val initialProcessing = firstRoundProcess(text, bdMarkdownFlavour)
         return Pair(makeContentsHTMLCompilationModel(
             inputPath = contentsPage,
             compiledHTML = initialProcessing,
@@ -181,7 +205,7 @@ class BookieCompiler(
         val text = openFiles[file]?.textBoxContent ?: file.readText()
         val compilationData = CompilationData(file)
         val bdMarkdownFlavour = BDMarkdownFlavour(compilationData, compileForFlask = buildForFlask)
-        val initialProcessing = firstRoundProcess(text, bdMarkdownFlavour, compilationData)
+        val initialProcessing = firstRoundProcess(text, bdMarkdownFlavour)
         IDCreator.resetCounters()
         GenerationTracker.reset()
         return makeChapterHTMLCompilationModel(
@@ -245,7 +269,6 @@ class BookieCompiler(
     private fun firstRoundProcess(
         rawText: String,
         flavour: BDMarkdownFlavour,
-        compilationData: CompilationData
     ): String {
         val parser = MarkdownParser(flavour)
         val ast = parser.buildMarkdownTreeFromString(rawText)
@@ -253,9 +276,6 @@ class BookieCompiler(
         val referencesInsertedHTML = processParagraphs(
             firstRoundHTML,
             flavour = flavour,
-            deferredParagraphs = compilationData.deferredParagraphs.toMap(),
-            deferredInlines = compilationData.deferredInlineBlocks.toMap(),
-            references = compilationData.referenceMap.toMap()
         )
         IDCreator.resetCounters()
         return referencesInsertedHTML
@@ -264,41 +284,36 @@ class BookieCompiler(
     private fun processParagraphs(
         html: String,
         flavour: BDMarkdownFlavour,
-        deferredParagraphs: Map<String, String>,
-        deferredInlines: Map<String, String>,
-        references: Map<String, String>
     ): String {
         var newHtml = html
+        // Process the deferred inline blocks (such as inline links).
+        for ((blockKey, toProcess) in flavour.compilationData.deferredInlineBlocks) {
+            val inlineHTML = HtmlGenerator(
+                toProcess,
+                MarkdownParser(flavour).buildMarkdownTreeFromString(toProcess),
+                flavour
+            )
+                .generateHtml()
+                .replace("<body>", "")
+                .replace("</body>", "")
+            newHtml = newHtml.replace(
+                blockKey,
+                inlineHTML
+            )
+        }
         // Replace the paragraphs with their actual content, then the placeholders
         // within the paragraphs with the corresponding reference index if it exists.
-        for ((marker, paragraph) in deferredParagraphs) {
+        for ((marker, paragraph) in flavour.compilationData.deferredParagraphs) {
             var processed = paragraph
-            for ((refKey, index) in references) {
+            for ((refKey, index) in flavour.compilationData.referenceMap) {
                 processed = processed.replace("{$refKey}", "<a href=\"#$refKey\">$index</a>")
             }
             // Replace placeholder with processed content.
             newHtml = newHtml.replace(marker, processed)
         }
         // Replace the templates in figures with their actual index.
-        for ((refKey, index) in references) {
+        for ((refKey, index) in flavour.compilationData.referenceMap) {
             newHtml = newHtml.replace("Figure {$refKey}", "Figure $index")
-        }
-        // Process the deferred inline blocks within paragraphs (such as inline links), as
-        // this has to be done by the base flavour to maintain both standard and custom
-        // syntax without creating a whole new flavour.
-        for ((blockKey, toProcess) in deferredInlines) {
-            val inlineHTML = HtmlGenerator(
-                toProcess,
-                MarkdownParser(flavour.baseFlavour).buildMarkdownTreeFromString(toProcess),
-                flavour.baseFlavour
-            )
-                .generateHtml()
-                .replace("<body><p>", "")
-                .replace("</p></body>", "")
-            newHtml = newHtml.replace(
-                blockKey,
-                inlineHTML
-            )
         }
         return newHtml
     }

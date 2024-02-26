@@ -1,5 +1,6 @@
 package backend.html.helpers
 
+import backend.model.ApplicationData
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.relativeTo
