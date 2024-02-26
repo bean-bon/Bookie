@@ -19,10 +19,13 @@ import backend.model.ApplicationData
 import backend.model.ProjectExportDialogModel
 import org.koin.compose.koinInject
 import views.helpers.FileDialog
+import views.helpers.SystemUtils
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
 import java.nio.file.Path
+import kotlin.io.path.div
+import kotlin.io.path.name
 
 class LauncherViewModel: KoinComponent {
 
@@ -97,7 +100,11 @@ fun projectExportDialogs(
         if (model.showLocalExportDialog) {
             FileDialog(
                 title = "Export your book",
-                mode = FileDialog.SAVE
+                mode = FileDialog.SAVE,
+                onCreate = { SystemUtils.getHomeFolder()?.let { f ->
+                    it.directory = (f / "Documents").toString()
+                    it.file = ApplicationData.projectDirectory!!.name
+                } }
             ) {
                 it?.let { p ->
                     EventManager.compileProject.publishEvent(p)
@@ -107,7 +114,11 @@ fun projectExportDialogs(
         } else if (model.showFlaskExportDialog) {
             FileDialog(
                 title = "Export your book as a Flask application",
-                mode = FileDialog.SAVE
+                mode = FileDialog.SAVE,
+                onCreate = { SystemUtils.getHomeFolder()?.let { f ->
+                    it.directory = (f / "Documents").toString()
+                    it.file = ApplicationData.projectDirectory!!.name
+                } }
             ) {
                 it?.let { p ->
                     EventManager.compileFlaskApp.publishEvent(p)

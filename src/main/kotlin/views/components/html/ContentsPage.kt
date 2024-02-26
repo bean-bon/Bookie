@@ -1,11 +1,15 @@
 package views.components.html
 
+import backend.html.ChapterLinkInformation
+import backend.html.helpers.CodeBlockHTMLData
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 
 fun bookieContents(
     pageTitle: String,
-    chapterHtml: String
+    chapterHtml: String,
+    codeBlocks: List<CodeBlockHTMLData>,
+    buildForFlask: Boolean
 ): String = createHTML().html {
     head {
         title(pageTitle)
@@ -16,6 +20,9 @@ fun bookieContents(
         }
         unsafe {
             raw(chapterHtml)
+        }
+        unsafe {
+            raw(contentScriptingTemplate(codeBlocks, buildForFlask, ChapterLinkInformation.empty))
         }
     }
 }

@@ -103,7 +103,7 @@ class BookieCompiler(
     }
 
     fun exportProjectToFlask(contentsPage: Path, outputPath: Path, bookTitle: String = "Book"): Path {
-        val contentsCompilationData = getContentsCompilationModel(contentsPage, outputPath, bookTitle)
+        val contentsCompilationData = getContentsCompilationModel(contentsPage, outputPath, bookTitle, true)
         compileModelToFlask(contentsCompilationData.first)
         contentsCompilationData.second.referencedChapters?.let { ci ->
             val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
@@ -128,7 +128,7 @@ class BookieCompiler(
     }
 
     fun exportProject(contentsPage: Path, outputPath: Path, bookTitle: String = "Book"): Path {
-        val contentsCompilationData = getContentsCompilationModel(contentsPage, outputPath, bookTitle)
+        val contentsCompilationData = getContentsCompilationModel(contentsPage, outputPath, bookTitle, false)
         compileModelToFile(contentsCompilationData.first)
         contentsCompilationData.second.referencedChapters?.let { ci ->
             val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
@@ -174,7 +174,8 @@ class BookieCompiler(
     private fun getContentsCompilationModel(
         contentsPage: Path,
         outputPath: Path,
-        bookTitle: String = "Book"
+        bookTitle: String = "Book",
+        buildForFlask: Boolean
     ): Pair<HTMLCompilationModel, CompilationData> {
         val text = openFiles[contentsPage]?.textBoxContent ?: contentsPage.readText()
         val compilationData = CompilationData(
@@ -189,7 +190,8 @@ class BookieCompiler(
             compilationData = compilationData,
             outputRoot = outputPath,
             relativeOutputPath = getPath("index.html")!!,
-            title = bookTitle
+            title = bookTitle,
+            buildForFlask = buildForFlask
         ), compilationData)
     }
 
@@ -220,12 +222,13 @@ class BookieCompiler(
         relativeOutputPath: Path,
         compiledHTML: String,
         title: String,
-        compilationData: CompilationData
+        compilationData: CompilationData,
+        buildForFlask: Boolean
     ) = HTMLCompilationModel(
         inputPath = inputPath,
         outputRoot = outputRoot,
         relativeOutputPath = relativeOutputPath,
-        html = bookieContents(title, compiledHTML),
+        html = bookieContents(title, compiledHTML, compilationData.codeBlockMap, buildForFlask),
         fileResources = compilationData.resourcesUtilised,
         codeBlockMapping = compilationData.codeBlockMap
     )

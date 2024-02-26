@@ -1,5 +1,6 @@
 package views.helpers
 
+import backend.extensions.getPath
 import java.nio.file.Path
 import kotlin.io.path.name
 
@@ -29,4 +30,5 @@ object SystemUtils {
             .directory(path.parent.toFile())
             .start()
     }
+    fun getHomeFolder(): Path? = getPath(System.getProperty("user.home"))
 }

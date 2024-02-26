@@ -191,6 +191,8 @@ private fun directory(
                                         resolvedPaths.add(copyPath)
                                     }
                                 }
+                                // This is not very efficient, but the event publish did not work
+                                // for drag and drop, so here we are.
                                 model.refreshContents()
                             }
 
