@@ -96,10 +96,9 @@ class ProjectEditorModel(
                 EventManager.htmlCompiled.publishEvent(it)
             }
         if (!(ApplicationData.projectDirectory!! / "out" / "ace_editor").exists()) {
-            decompressZipFile("ace_editor.zip", ApplicationData.projectDirectory!! / "out")
-            EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(outFolder / "ace_editor")))
+            decompressZipFile("ace_editor.zip", outFolder)
         }
-        EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(ApplicationData.projectDirectory!! / "out")))
+        EventManager.projectFilesAdded.publishEvent(listOf(FileStorage.makeTree(outFolder)))
     }
 
     private fun renameFile(path: Pair<Path, String>) {
