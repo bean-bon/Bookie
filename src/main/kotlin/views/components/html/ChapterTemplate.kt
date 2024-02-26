@@ -1,16 +1,11 @@
 package views.components.html
 
-import backend.html.AceLanguageTranslation
 import backend.html.ChapterLinkInformation
 import backend.html.helpers.CodeBlockHTMLData
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import backend.extensions.getPath
-import backend.helpers.readTextFromResource
-import backend.html.helpers.PathResolver
-import java.net.URLDecoder
-import java.nio.file.Path
-import kotlin.io.path.div
+import backend.html.HeadingData
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.relativeTo
 
@@ -18,6 +13,8 @@ fun chapterTemplate(
     compiledHtml: String,
     codeBlocks: List<CodeBlockHTMLData> = listOf(),
     chapterLinkInformation: ChapterLinkInformation,
+    contents: List<HeadingData>,
+    maxContentsSectionLevel: Int = 3,
     buildFlaskTemplate: Boolean = false
 ) = createHTML().html {
     val nestedSize = chapterLinkInformation.currentInfo.path.split("/").size
@@ -47,18 +44,37 @@ fun chapterTemplate(
 
     }
     body {
-        div("contents-container") {
-            p { +"Table of contents here" }
+        h1(classes = "chapter-title") {
+            +(
+                if (!isPreview)
+                    "Chapter ${chapterLinkInformation.currentInfo.index} - ${chapterLinkInformation.currentInfo.name}"
+                else
+                    "Preview of ${chapterLinkInformation.currentInfo.name}"
+            )
+        }
+        div {
+            id = "contents-container"
+//            button(classes = "open") {
+//                id = "contents-toggle"
+//                onClick = "toggleContentsVisibility(this, 'contents-list')"
+                p(classes = "contents-title") {
+                    +"Contents"
+//                    span(classes = "triangle")
+                }
+//            }
+            div {
+                id = "contents-list"
+                for (h in contents.filter { it.level <= maxContentsSectionLevel }) {
+                    div(classes = "h${h.level}-contents-link") {
+                        a(href = "#${h.id}") {
+                            +"${h.index} ${h.content}"
+                        }
+                    }
+                }
+            }
         }
         div("bd-blocks") {
-            h1 {
-                +(
-                    if (!isPreview)
-                        "Chapter ${chapterLinkInformation.currentInfo.index} - ${chapterLinkInformation.currentInfo.name}"
-                    else
-                        "Preview of ${chapterLinkInformation.currentInfo.name}"
-                )
-            }
+
             unsafe {
                 raw(compiledHtml)
             }

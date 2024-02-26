@@ -15,7 +15,7 @@ function replaceAceBlockContents(filePath, editor) {
             editor.setValue(fileContent);
             editor.gotoLine(0);
         })
-};
+}
 
 // This can only work if running in a web server with a "/code_runner" POST route.
 // The returned JSON should be: {output: str, exit_code: str}.
@@ -41,4 +41,17 @@ function runCode(language, code_content, file_name, output_element_id, run_resul
             run_result_element.textContent = exit_code
         }
     );
-};
+}
+
+function toggleContentsVisibility(toggleButton, contentsListID) {
+    const contentsList = document.getElementById(contentsListID);
+    if (contentsList.style.display === "none") {
+        toggleButton.classes.add('open')
+        toggleButton.classes.remove('closed')
+        contentsList.style.display = "block"
+    } else {
+        toggleButton.classes.add('closed')
+        toggleButton.classes.remove('open')
+        contentsList.style.display = "none"
+    }
+}

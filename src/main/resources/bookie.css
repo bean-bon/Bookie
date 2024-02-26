@@ -1,6 +1,6 @@
 /* Main text type for paragraphs */
 p {
-    font-family: "Arial";
+    font-family: "Arial", serif;
 }
 
 /* The parent container for all compiled text. */
@@ -11,6 +11,11 @@ p {
 	align-content: center
 }
 
+/* Styling for the chapter title. */
+.chapter-title {
+    font-size: xxx-large;
+}
+
 /* Styling for images, videos and their captions. The more specific
  classes take precedence. */
 .figure {
@@ -19,7 +24,7 @@ p {
 }
 
 .caption {
-    font-weight: italic;
+    font-style: italic;
 }
 
 .img-figure {
@@ -132,7 +137,7 @@ p {
 
 /* Styling for correct answer blocks. */
 .correct {
-    background-color: green;
+    background-color: limegreen;
 }
 
 /* Styling for incorrect answer blocks. */
@@ -155,9 +160,75 @@ p {
     
 }
 
-/* Container for page contents at the top of the page (not yet implemented). */
-.contents-container {
+/* Container for page contents at the top of the page. */
+#contents-container {
+    background-color: lightcoral;
+    padding: 5px;
+    margin-bottom: 5px;
+    width: 100vw;
+}
 
+/* Text at the top of the contents block. */
+.contents-title {
+    font-weight: bold;
+}
+
+/* (Not currently implemented) region for the contents visibility toggle. */
+#contents-toggle {
+
+}
+
+/* Helper classes for identifying open or closed components. */
+.closed {}
+.open {}
+
+/* Control the triangle used for the Show/Hide contents button*/
+#contents-toggle.closed .triangle {
+    transform: rotate(90deg);
+}
+
+#contents-toggle.open .triangle {
+    transform: rotate(180deg);
+}
+
+/* Triangle CSS courtesy of https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_shapes_triangle-up */
+.triangle {
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid #555;
+    object-fit: contain;
+}
+
+/* Container specifically for the contents links (display: none; means hidden by default). */
+#contents-list {
+    display: block;
+}
+
+/* Styling for every level of contents link. */
+.h1-contents-link {
+    margin-left: 0;
+}
+
+.h2-contents-link {
+    margin-left: 5px;
+}
+
+.h3-contents-link {
+    margin-left: 10px;
+}
+
+.h4-contents-link {
+    margin-left: 15px;
+}
+
+.h5-contents-link {
+    margin-left: 20px;
+}
+
+.h6-contents-link {
+    margin-left: 25px;
 }
 
 /* Container at the bottom of the page for chapter navigation. */

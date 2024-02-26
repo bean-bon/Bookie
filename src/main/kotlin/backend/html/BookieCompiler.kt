@@ -103,10 +103,11 @@ class BookieCompiler(
     }
 
     fun exportProjectToFlask(contentsPage: Path, outputPath: Path, bookTitle: String = "Book"): Path {
-        val contentsCompilationData = getContentsCompilationModel(contentsPage, outputPath, bookTitle, true)
+        val contentsCompilationData = getFrontMatterCompilationModel(contentsPage, outputPath, bookTitle, true)
         compileModelToFlask(contentsCompilationData.first)
         contentsCompilationData.second.referencedChapters?.let { ci ->
             val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
+            IDCreator.resetCounters()
             compileChapters(ci.toList(), chapterModels, outputPath, buildForFlask = true)
             chapterModels.forEach {
                 compileModelToFlask(it.value)
@@ -128,10 +129,11 @@ class BookieCompiler(
     }
 
     fun exportProject(contentsPage: Path, outputPath: Path, bookTitle: String = "Book"): Path {
-        val contentsCompilationData = getContentsCompilationModel(contentsPage, outputPath, bookTitle, false)
+        val contentsCompilationData = getFrontMatterCompilationModel(contentsPage, outputPath, bookTitle, false)
         compileModelToFile(contentsCompilationData.first)
         contentsCompilationData.second.referencedChapters?.let { ci ->
             val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
+            IDCreator.resetCounters()
             compileChapters(ci.toList(), chapterModels, outputPath, buildForFlask = false)
             chapterModels.forEach {
                 compileModelToFile(it.value)
@@ -152,6 +154,7 @@ class BookieCompiler(
         buildForFlask: Boolean
     ) = chapterInfo.let {
         for ((i, chap) in it.withIndex()) {
+            IDCreator.resetCounters()
             if (chap.path.contains(":")) continue
             getPath(chap.path)?.let { p ->
                 buildFile(
@@ -171,7 +174,7 @@ class BookieCompiler(
         }
     }
 
-    private fun getContentsCompilationModel(
+    private fun getFrontMatterCompilationModel(
         contentsPage: Path,
         outputPath: Path,
         bookTitle: String = "Book",
@@ -250,7 +253,8 @@ class BookieCompiler(
             compiledHtml = compiledHTML,
             codeBlocks = compilationData.codeBlockMap,
             chapterLinkInformation = chapterLinkInformation,
-            buildFlaskTemplate = buildFlaskTemplate
+            buildFlaskTemplate = buildFlaskTemplate,
+            contents = compilationData.headingData
         ),
         fileResources = compilationData.resourcesUtilised.filter {
             // Only allow local paths, otherwise they are rendered by the browser.
@@ -342,6 +346,7 @@ data class CompilationData(
     val file: Path,
     val codeBlockMap: MutableList<CodeBlockHTMLData> = mutableListOf(),
     val resourcesUtilised: MutableList<Path> = mutableListOf(),
+    val headingData: MutableList<HeadingData> = mutableListOf(),
     val deferredParagraphs: MutableMap<String, String> = mutableMapOf(),
     val deferredInlineBlocks: MutableMap<String, String> = mutableMapOf(),
     val referenceMap: MutableMap<String, String> = mutableMapOf(),

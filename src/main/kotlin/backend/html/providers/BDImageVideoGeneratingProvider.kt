@@ -44,6 +44,8 @@ class BDImageVideoGeneratingProvider(
         val makeFigure = reference != null
         val alt = if (makeFigure) mediaDescription.split(":")[1].trim() else mediaDescription
 
+        IDCreator.figure.nextId
+
         /**
          * If a video file can be resolved, produce a video tag
          * instead of an image, will be made into a figure if the alt
@@ -85,7 +87,7 @@ class BDImageVideoGeneratingProvider(
         asFigure: Boolean,
     ) {
         id?.let {
-            referenceMap[it] = IDCreator.figure.nextId
+            referenceMap[it] = IDCreator.makeFigureNumberForCurrentState()
         }
         if (asFigure) visitor.consumeHtml("<figure>\n")
         visitor.consumeTagOpen(
@@ -97,7 +99,7 @@ class BDImageVideoGeneratingProvider(
             autoClose = true
         )
         if (asFigure) {
-            val caption = id?.let { "Figure {$it}: $alt" } ?: alt
+            val caption = id?.let { "Figure ${IDCreator.makeFigureNumberForCurrentState()}: $alt" } ?: alt
             visitor.consumeHtml("\n<figcaption class=\"caption img-figure-caption\">$caption</figcaption>\n")
             visitor.consumeHtml("</figure>\n")
         }
@@ -112,7 +114,7 @@ class BDImageVideoGeneratingProvider(
         asFigure: Boolean,
     ) {
         id?.let {
-            referenceMap[it] = IDCreator.figure.nextId
+            referenceMap[it] = IDCreator.makeFigureNumberForCurrentState()
         }
         if (asFigure) visitor.consumeHtml("<figure>\n")
         visitor.consumeHtml("<p>")
@@ -126,7 +128,7 @@ class BDImageVideoGeneratingProvider(
         )
         visitor.consumeHtml("</p>")
         if (asFigure) {
-            val caption = id?.let { "Figure {$it}: $alt" } ?: alt
+            val caption = "Figure ${IDCreator.makeFigureNumberForCurrentState()}: $alt"
             visitor.consumeHtml("\n<figcaption class=\"caption video-figure-caption\">$caption</figcaption>\n")
             visitor.consumeHtml("</figure>\n")
         }

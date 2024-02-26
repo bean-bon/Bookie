@@ -106,8 +106,7 @@ fun projectExportDialogs(
                     it.file = "${ApplicationData.projectDirectory!!.name} (Exported)"
                 } }
             ) {
-                val path = it?.toString()?.removeSuffix(" (Exported)")
-                getPath(path)?.let { p ->
+                it?.let { p ->
                     EventManager.compileProject.publishEvent(p)
                     model.showLocalExportDialog = false
                 }
@@ -121,8 +120,7 @@ fun projectExportDialogs(
                     it.file = "${ApplicationData.projectDirectory!!.name} (Flask)"
                 } }
             ) {
-                val path = it?.toString()?.removeSuffix(" (Flask)")
-                getPath(path)?.let { p ->
+                it?.let { p ->
                     EventManager.compileFlaskApp.publishEvent(p)
                     model.showFlaskExportDialog = false
                 }

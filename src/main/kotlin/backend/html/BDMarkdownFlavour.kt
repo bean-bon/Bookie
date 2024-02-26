@@ -25,7 +25,7 @@ import org.intellij.markdown.parser.sequentialparsers.SequentialParserManager
  */
 class BDMarkdownFlavour(
     val compilationData: CompilationData,
-    val baseFlavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
+    private val baseFlavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
     val compileForFlask: Boolean = false
 ) : MarkdownFlavourDescriptor {
 
@@ -68,7 +68,7 @@ class BDMarkdownFlavour(
         // Heading providers.
         for (i in 1..6) setElementGeneratorGivenKeyLambda(
             generatorMap,
-            BDHeadingProvider(level = i, headingIds = mutableListOf())
+            BDHeadingProvider(level = i, headingData = compilationData.headingData)
         ) { it.name == "ATX_$i"}
         // Paragraph provider.
         setElementGeneratorGivenKeyLambda(
