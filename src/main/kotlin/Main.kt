@@ -103,10 +103,11 @@ fun projectExportDialogs(
                 mode = FileDialog.SAVE,
                 onCreate = { SystemUtils.getHomeFolder()?.let { f ->
                     it.directory = (f / "Documents").toString()
-                    it.file = ApplicationData.projectDirectory!!.name
+                    it.file = "${ApplicationData.projectDirectory!!.name} (Exported)"
                 } }
             ) {
-                it?.let { p ->
+                val path = it?.toString()?.removeSuffix(" (Exported)")
+                getPath(path)?.let { p ->
                     EventManager.compileProject.publishEvent(p)
                     model.showLocalExportDialog = false
                 }
@@ -117,10 +118,11 @@ fun projectExportDialogs(
                 mode = FileDialog.SAVE,
                 onCreate = { SystemUtils.getHomeFolder()?.let { f ->
                     it.directory = (f / "Documents").toString()
-                    it.file = ApplicationData.projectDirectory!!.name
+                    it.file = "${ApplicationData.projectDirectory!!.name} (Flask)"
                 } }
             ) {
-                it?.let { p ->
+                val path = it?.toString()?.removeSuffix(" (Flask)")
+                getPath(path)?.let { p ->
                     EventManager.compileFlaskApp.publishEvent(p)
                     model.showFlaskExportDialog = false
                 }
