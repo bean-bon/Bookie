@@ -1,25 +1,37 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.*
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.MenuBar
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
 import androidx.compose.ui.zIndex
 import backend.*
-import org.koin.compose.KoinApplication
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.dsl.module
-import views.*
-import views.menu.ProjectEditorMenuBar
-import views.menu.ProjectSelectionMenuBar
-import views.viewmodels.MDOutputViewModel
 import backend.extensions.getPath
 import backend.model.ApplicationData
 import backend.model.ProjectExportDialogModel
+import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.dsl.module
+import views.FileDialogAction
+import views.ProjectEditor
+import views.ProjectSelection
+import views.helpers.BookieTheme
 import views.helpers.FileDialog
 import views.helpers.SystemUtils
+import views.menu.ProjectEditorMenuBar
+import views.menu.ProjectSelectionMenuBar
+import views.viewmodels.MDOutputViewModel
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
@@ -63,9 +75,9 @@ class LauncherViewModel: KoinComponent {
 @Preview
 fun Launcher(
     model: LauncherViewModel = koinInject(),
-    projectExportDialogModel: ProjectExportDialogModel = koinInject()
+    projectExportDialogModel: ProjectExportDialogModel = koinInject(),
 ) {
-    MaterialTheme {
+    BookieTheme {
         if (ApplicationData.projectDirectory == null) {
             ProjectSelection(
                 model = model.projectSelectionModel,
@@ -97,7 +109,20 @@ fun projectExportDialogs(
     modifier: Modifier = Modifier.zIndex(1f)
 ) {
     Box(modifier) {
-        if (model.showLocalExportDialog) {
+        if (model.showTitleQueryDialog) {
+            titleQueryDialog(
+                textBoxDefaultContent = ApplicationData.projectDirectory?.name ?: "",
+                updateTitle = { model.userTitle = it },
+                onConfirmRequest = {
+                    model.showTitleQueryDialog = false
+                    if (model.passQueryToFlask) model.showFlaskExportDialog = true
+                    else model.showLocalExportDialog = true
+                }
+            ) {
+                model.showTitleQueryDialog = false
+            }
+        }
+        else if (model.showLocalExportDialog) {
             FileDialog(
                 title = "Export your book",
                 mode = FileDialog.SAVE,
@@ -107,9 +132,10 @@ fun projectExportDialogs(
                 } }
             ) {
                 it?.let { p ->
-                    EventManager.compileProject.publishEvent(p)
+                    EventManager.compileProject.publishEvent(Pair(p, model.userTitle))
                     model.showLocalExportDialog = false
                 }
+                model.userTitle = ""
             }
         } else if (model.showFlaskExportDialog) {
             FileDialog(
@@ -121,14 +147,45 @@ fun projectExportDialogs(
                 } }
             ) {
                 it?.let { p ->
-                    EventManager.compileFlaskApp.publishEvent(p)
+                    EventManager.compileFlaskApp.publishEvent(Pair(p, model.userTitle))
                     model.showFlaskExportDialog = false
                 }
+                model.userTitle = ""
             }
         }
     }
 }
 
+@Composable
+private fun titleQueryDialog(
+    textBoxDefaultContent: String = "",
+    onConfirmRequest: () -> Unit,
+    updateTitle: (String) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    var textBoxContent by remember { mutableStateOf(textBoxDefaultContent) }
+    AlertDialog(
+        title = { Text("Name your book", Modifier.padding(bottom = 10.dp), fontWeight = FontWeight.Bold) },
+        text = {
+           TextField(textBoxContent, onValueChange = { textBoxContent = it }, singleLine = true)
+        },
+        dismissButton = {
+            Button(onDismissRequest) {
+                Text("Cancel")
+            }
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            Button({
+                updateTitle(textBoxContent)
+                onConfirmRequest()
+                onDismissRequest()
+            }) {
+                Text("Export")
+            }
+        }
+    )
+}
 
 private fun setProjectPreferences(fd: FileDialog) {
     PreferenceHandler.setUserPreference(PreferencePaths.user.lastProjectName, fd.file)
@@ -148,8 +205,8 @@ private val appModule = module(createdAtStart = true) {
 fun main() = application {
 
     Window(
-      onCloseRequest = ::exitApplication,
-      title = ApplicationData.windowTitle,
+        onCloseRequest = ::exitApplication,
+        title = ApplicationData.windowTitle,
     ) {
         KoinApplication(application = {
             modules(appModule)

@@ -7,4 +7,3 @@ echo Installing Python requirements
 pip install -r requirements.txt >NUL
 
 echo Installation complete!
-pause

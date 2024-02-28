@@ -20,8 +20,6 @@ fun bookieContents(
         }
         unsafe {
             raw(chapterHtml)
-        }
-        unsafe {
             raw(contentScriptingTemplate(codeBlocks, buildForFlask, ChapterLinkInformation.empty))
         }
     }

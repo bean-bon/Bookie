@@ -10,6 +10,7 @@ import backend.helpers.decompressZipFile
 import backend.html.BookieCompiler
 import backend.html.ChapterInformation
 import backend.html.ChapterLinkInformation
+import backend.html.helpers.IDCreator
 import backend.html.helpers.PathResolver
 import org.koin.core.component.KoinComponent
 import backend.model.FileModel
@@ -47,26 +48,28 @@ class ProjectEditorModel(
 
     val openFiles = mutableStateMapOf<Path, TextEditorEntryFieldModel>()
 
-    private fun compileProject(outputPath: Path): Boolean {
+    private fun compileProject(outputData: Pair<Path, String>): Boolean {
         val contentsPage = ApplicationData.projectDirectory!! / "front_matter.bd"
         return if (contentsPage.exists()) {
             BookieCompiler(openFiles).exportProject(
                 contentsPage,
-                outputPath,
-                bookTitle = outputPath.name
+                outputData.first,
+                bookTitle = outputData.second
             )
+            IDCreator.resetCounters()
             true
         } else false
     }
 
-    private fun compileFlaskApp(outputPath: Path): Boolean {
+    private fun compileFlaskApp(outputData: Pair<Path, String>): Boolean {
         val contentsPage = ApplicationData.projectDirectory!! / "front_matter.bd"
         return if (contentsPage.exists()) {
             BookieCompiler(openFiles).exportProjectToFlask(
                 contentsPage,
-                outputPath,
-                bookTitle = outputPath.name
+                outputData.first,
+                bookTitle = outputData.second
             )
+            IDCreator.resetCounters()
             true
         } else false
     }
@@ -157,10 +160,6 @@ class ProjectEditorModel(
             EventManager.saveFile.publishEvent(it)
             EventManager.buildFile.publishEvent(it.file)
         }
-    }
-
-    fun saveAllFiles() = openFiles.forEach {
-        EventManager.saveFile.publishEvent(it.value)
     }
 
     private fun saveFile(model: TextEditorEntryFieldModel) {

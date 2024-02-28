@@ -1,21 +1,20 @@
 package views.editor
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.*
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.unit.dp
 import backend.EventManager
 import views.components.TextEditorTab
-import views.viewmodels.TextEditorEntryFieldModel
 import views.viewmodels.TextEditorViewModel
 import kotlin.io.path.name
 
@@ -100,13 +99,14 @@ fun TextEditor(
                 }
             }
         }
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
             model.selectedFile?.let {
                 TextEditorEntryField(it)
             } ?: run {
                 Text(
                     "Select a file to edit from the file tree",
-                    Modifier.align(Alignment.Center)
+                    Modifier.align(Alignment.Center),
+                    color = MaterialTheme.colors.onBackground
                 )
             }
         }

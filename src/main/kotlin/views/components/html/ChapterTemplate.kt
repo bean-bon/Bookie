@@ -52,8 +52,9 @@ fun chapterTemplate(
                     "Preview of ${chapterLinkInformation.currentInfo.name}"
             )
         }
-        div {
-            id = "contents-container"
+        if (contents.isNotEmpty()) {
+            div {
+                id = "contents-container"
 //            button(classes = "open") {
 //                id = "contents-toggle"
 //                onClick = "toggleContentsVisibility(this, 'contents-list')"
@@ -62,12 +63,13 @@ fun chapterTemplate(
 //                    span(classes = "triangle")
                 }
 //            }
-            div {
-                id = "contents-list"
-                for (h in contents.filter { it.level <= maxContentsSectionLevel }) {
-                    div(classes = "h${h.level}-contents-link") {
-                        a(href = "#${h.id}") {
-                            +"${h.index} ${h.content}"
+                div {
+                    id = "contents-list"
+                    for (h in contents.filter { it.level <= maxContentsSectionLevel }) {
+                        div(classes = "h${h.level}-contents-link") {
+                            a(href = "#${h.id}") {
+                                +"${h.index} ${h.content}"
+                            }
                         }
                     }
                 }

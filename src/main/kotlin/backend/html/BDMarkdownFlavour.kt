@@ -17,10 +17,7 @@ import org.intellij.markdown.parser.sequentialparsers.SequentialParserManager
  * lexing, then custom HTML GeneratingProvider classes replace those from the
  * base flavour.
  * @param baseFlavour the flavour of Markdown to use for non-Bookie syntax.
- * @param codeBlockList code block list found by the parsers.
- * @param referenceMap mapping of figures to occurrence index.
- * @param deferredParagraphs replacement tokens mapped to pure paragraphs for later processing
- * to accommodate the use of references.
+ * @param compilationData Stores all information about the compilation, will be updated when generating HTML.
  * @author Benjamin Groom
  */
 class BDMarkdownFlavour(
@@ -50,7 +47,6 @@ class BDMarkdownFlavour(
                 baseURI
             ).makeXssSafe(true)
         ) { it.name == "IMAGE" }
-        println(generatorMap.map { it.key }.joinToString("\n"))
         // Code fence provider.
         setElementGeneratorGivenKeyLambda(
             generatorMap,

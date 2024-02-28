@@ -1,4 +1,4 @@
 #!/bin/bash
 
 source venv/bin/activate
-python3 app.py
+gunicorn --bind "0.0.0.0:5000" app:app -w 4

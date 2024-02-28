@@ -11,4 +11,3 @@ echo "Installing Python requirements"
 pip install -r requirements.txt
 
 echo "Installation complete!"
-read -r -p "Press [Enter] key to continue..."

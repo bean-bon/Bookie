@@ -1,21 +1,15 @@
 package views.components
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backend.html.helpers.PathResolver
@@ -43,8 +37,8 @@ fun TextEditorTab(
         delayMillis = 1000
     ) {
         val backgroundColour =
-            if (selected) MaterialTheme.colors.primarySurface
-            else MaterialTheme.colors.secondaryVariant
+            if (selected) MaterialTheme.colors.primary
+            else MaterialTheme.colors.secondary
         Column {
             Row(
                 modifier = Modifier

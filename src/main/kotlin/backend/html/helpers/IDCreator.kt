@@ -11,6 +11,15 @@ internal object IDCreator {
     val inlineBlock = IDBuilder("inline")
     val figure = IDBuilder("figure")
 
+    fun resetCounters() {
+        codeBlock.resetCounter()
+        paragraph.resetCounter()
+        chapter.resetCounter()
+        inlineBlock.resetCounter()
+        figure.resetCounter()
+        Headings.resetAllFrom(1)
+    }
+
     internal object Headings {
 
         val h1 = IDBuilder("h1")
@@ -49,14 +58,6 @@ internal object IDCreator {
 
     fun resetFigureIfNeeded(level: Int) {
         if (level < 4) figure.resetCounter()
-    }
-
-    fun resetCounters() {
-        codeBlock.resetCounter()
-        paragraph.resetCounter()
-        chapter.resetCounter()
-        inlineBlock.resetCounter()
-        Headings.resetAllFrom(0)
     }
 
 }

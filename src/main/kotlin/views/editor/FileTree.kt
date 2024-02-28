@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,7 +40,7 @@ fun FileTree(
     if (showNewFolderDialog) {
         fileModificationDialog(
             fileTreeModel.path,
-            title = { Text("Create new folder") },
+            title = { Text("Create new folder", fontWeight = FontWeight.Bold) },
             reservedNames = listOf("ace_editor"),
             confirmText = "Create folder",
             modifyExisting = false,
@@ -114,7 +115,7 @@ private fun directory(
         if (showNewFileDialog) {
             fileModificationDialog(
                 model.path,
-                title = { Text("Create new Bookie file") },
+                title = { Text("Create new Bookie file", fontWeight = FontWeight.Bold) },
                 confirmText = "Create file",
                 modifyExisting = false,
                 onDismissRequest = { showNewFileDialog = false }
@@ -124,7 +125,7 @@ private fun directory(
         } else if (showNewDirectoryDialog) {
             fileModificationDialog(
                 model.path,
-                title = { Text("Create new folder") },
+                title = { Text("Create new folder", fontWeight = FontWeight.Bold) },
                 confirmText = "Create folder",
                 modifyExisting = false,
                 onDismissRequest = { showNewDirectoryDialog = false }
@@ -134,7 +135,7 @@ private fun directory(
         } else if (renameDirectory) {
             fileModificationDialog(
                 model.path,
-                title = { Text("Rename ${model.path}") },
+                title = { Text("Rename ${model.path}", fontWeight = FontWeight.Bold) },
                 confirmText = "Rename folder",
                 modifyExisting = true,
                 onDismissRequest = { renameDirectory = false }
@@ -252,7 +253,7 @@ private fun file(
     } else if (renaming) {
         fileModificationDialog(
             fileModel.path,
-            title = { Text("Rename ${fileModel.path}") },
+            title = { Text("Rename ${fileModel.path}", fontWeight = FontWeight.Bold) },
             confirmText = "Rename file",
             modifyExisting = true,
             onDismissRequest = { renaming = false }
@@ -330,14 +331,15 @@ fun fileModificationDialog(
         onDismissRequest = onDismissRequest,
         title = title,
         text = {
-            Column(Modifier.padding(5.dp)) {
+            Column {
                 TextField(
                     newFileName,
                     singleLine = true,
                     onValueChange = {
                         newFileName = it.replace(".", "")
                         conflictingNewFileName =
-                            if (modifyExisting) (file.parent / "$newFileName$extension").exists()
+                            if (newFileName.isEmpty()) false
+                            else if (modifyExisting) (file.parent / "$newFileName$extension").exists()
                             else (file / "$newFileName$extension").exists()
                         startsWithNumber = !file.isDirectory() && newFileName.firstOrNull()?.isDigit() == true
                         reservedName = newFileName in reservedNames
@@ -381,11 +383,15 @@ fun deletionDialog(
         modifier = Modifier.zIndex(-1f),
         onDismissRequest = onDismissRequest,
         title = {
-            if (file.isDirectory()) {
-                Text("Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\" " +
-                        "and everything inside (${file.childCount()} files)?")
-            } else {
-                Text("Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\"?")
+            Column(Modifier.padding(bottom = 10.dp)) {
+                if (file.isDirectory()) {
+                    Text(
+                        "Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\" " +
+                                "and everything inside (${file.childCount()} files)?"
+                    )
+                } else {
+                    Text("Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\"?")
+                }
             }
         },
         dismissButton = {
