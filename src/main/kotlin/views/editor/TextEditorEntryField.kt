@@ -9,6 +9,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,7 +24,8 @@ fun TextEditorEntryField(
             value = model.textBoxContent,
             onValueChange = { new -> model.textBoxContent = new; model.modified = true },
             modifier = Modifier.background(MaterialTheme.colors.background),
-            textStyle = TextStyle(color = MaterialTheme.colors.onBackground)
+            textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
+            cursorBrush = Brush.linearGradient(listOf(MaterialTheme.colors.onBackground, MaterialTheme.colors.onBackground))
         )
         if (model.textBoxContent.isBlank()) {
             Text(

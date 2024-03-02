@@ -5,10 +5,8 @@ import backend.helpers.readTextFromResource
 import backend.html.AceLanguageTranslation
 import backend.html.ChapterLinkInformation
 import backend.html.helpers.CodeBlockHTMLData
-import kotlinx.html.ScriptCrossorigin
-import kotlinx.html.script
+import kotlinx.html.*
 import kotlinx.html.stream.createHTML
-import kotlinx.html.unsafe
 import kotlin.io.path.div
 import kotlin.io.path.nameWithoutExtension
 
@@ -17,11 +15,12 @@ import kotlin.io.path.nameWithoutExtension
  * @see backend.html.providers.CommonFunctions
  * @author Benjamin Groom
  */
-fun contentScriptingTemplate(
+fun HTML.contentScriptingTemplate(
     codeBlocks: List<CodeBlockHTMLData>,
     buildForFlask: Boolean,
     chapterLinkInformation: ChapterLinkInformation
-) = createHTML().script(crossorigin = ScriptCrossorigin.anonymous) {
+): SCRIPT.() -> Unit = {
+    crossorigin = ScriptCrossorigin.anonymous
     if (codeBlocks.isNotEmpty()) {
         unsafe {
             raw(readTextFromResource("StaticCode.js"))

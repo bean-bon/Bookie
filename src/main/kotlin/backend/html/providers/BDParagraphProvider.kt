@@ -39,7 +39,7 @@ class BDParagraphProvider(
         val permittedNames = listOf(
             "TEXT", "WHITE_SPACE", "EOL", "BR",
             "SHORT_REFERENCE_LINK", "FULL_REFERENCE_LINK", "INLINE_LINK",
-            "(", ")"
+            "(", ")", ":", "'", "!"
         )
         // Ensures that quiz blocks are only recognised if they are immediately followed by the answer list.
         onStartProcessing()
@@ -51,7 +51,7 @@ class BDParagraphProvider(
         var paragraph = ""
         for (v in node.children) {
             when (v.type.name) {
-                "TEXT", "WHITE_SPACE", "(", ")", "BR", "EOL" -> {
+                "TEXT", "WHITE_SPACE", "(", ")", "BR", "EOL", ":", "'", "!" -> {
                     paragraph += v.getTextInNode(text)
                 }
                 else -> {

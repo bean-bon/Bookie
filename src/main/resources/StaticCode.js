@@ -35,12 +35,15 @@ function runCode(language, code_content, file_name, output_element_id, run_resul
         .then(json => {
             const output = json.output;
             const exit_code = json.exit_code;
-            const output_element = document.getElementById(output_element_id)
-            const run_result_element = document.getElementById(run_result_element_id)
-            output_element.textContent = output
-            run_result_element.textContent = exit_code
-        }
-    );
+            const output_element = document.getElementById(output_element_id);
+            const run_result_element = document.getElementById(run_result_element_id);
+            output_element.textContent = output;
+            run_result_element.textContent = exit_code;
+        })
+        .catch(_ => {
+            const outputElement = document.getElementById(output_element_id)
+            outputElement.textContent = "Encountered an error while trying to decode server response, there may be a connection issue."
+        });
 }
 
 function toggleContentsVisibility(toggleButton, contentsListID) {

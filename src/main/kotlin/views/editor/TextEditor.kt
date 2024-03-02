@@ -72,7 +72,10 @@ fun TextEditor(
                 }
             )
         }
-        Box(Modifier.fillMaxWidth().background(Color.LightGray)) {
+        Box(Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colors.surface)
+        ) {
             var scrollOffset by remember { mutableStateOf(0f) }
             Row(
                 Modifier

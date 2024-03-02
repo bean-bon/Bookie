@@ -10,17 +10,19 @@ fun bookieContents(
     chapterHtml: String,
     codeBlocks: List<CodeBlockHTMLData>,
     buildForFlask: Boolean
-): String = createHTML().html {
-    head {
-        title(pageTitle)
-    }
+): String = "<!DOCTYPE html>\n" + createHTML().html {
+
+    head(block = bookieHeader(pageTitle, buildForFlask, codeBlocks.isNotEmpty(), ""))
+
     body {
-        h1 {
+        h1(classes = "chapter-title") {
             +pageTitle
         }
-        unsafe {
-            raw(chapterHtml)
-            raw(contentScriptingTemplate(codeBlocks, buildForFlask, ChapterLinkInformation.empty))
+        div(classes = "bd-blocks") {
+            unsafe {
+                raw(chapterHtml)
+            }
         }
+        script(block = this@html.contentScriptingTemplate(codeBlocks, buildForFlask, ChapterLinkInformation.empty))
     }
 }

@@ -72,7 +72,7 @@ fun FileTree(
             modifier = Modifier
                 .fillMaxHeight(1f)
                 .fillMaxWidth()
-                .background(Color.LightGray)
+                .background(MaterialTheme.colors.surface)
                 .verticalScroll(rememberScrollState())
                 .horizontalScroll(rememberScrollState())
         ) {
@@ -93,7 +93,7 @@ fun FileTree(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun directory(
     model: DirectoryModel,
@@ -215,7 +215,8 @@ private fun directory(
                         model.path.name,
                         modifier = Modifier.padding(PaddingValues(start = 3.dp)),
                         maxLines = 1,
-                        overflow = TextOverflow.Clip
+                        overflow = TextOverflow.Clip,
+                        color = MaterialTheme.colors.onSurface
                     )
                 }
             }
@@ -302,7 +303,8 @@ private fun file(
                 modifier = Modifier
                     .padding(PaddingValues(start = 3.dp)),
                 maxLines = 1,
-                overflow = TextOverflow.Clip
+                overflow = TextOverflow.Clip,
+                color = MaterialTheme.colors.onSurface
             )
         }
     }
