@@ -249,7 +249,7 @@ class BookieCompiler(
         inputPath = file,
         outputRoot = outputRoot,
         relativeOutputPath = relativeOutputPath,
-        html = chapterTemplate(
+        html = "<!DOCTYPE html>\n" + chapterTemplate(
             compiledHtml = compiledHTML,
             codeBlocks = compilationData.codeBlockMap,
             chapterLinkInformation = chapterLinkInformation,
