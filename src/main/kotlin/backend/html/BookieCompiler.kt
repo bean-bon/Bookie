@@ -4,7 +4,6 @@ import backend.model.ApplicationData
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import backend.EventManager
 import backend.helpers.decompressZipFile
-import backend.html.helpers.CodeBlockHTMLData
 import backend.html.helpers.IDCreator
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
@@ -342,13 +341,3 @@ class BookieCompiler(
         (outputRoot / name).writeText(readTextFromResource("$resourcePrefix$name"))
 }
 
-data class CompilationData(
-    val file: Path,
-    val codeBlockMap: MutableList<CodeBlockHTMLData> = mutableListOf(),
-    val resourcesUtilised: MutableList<Path> = mutableListOf(),
-    val headingData: MutableList<HeadingData> = mutableListOf(),
-    val deferredParagraphs: MutableMap<String, String> = mutableMapOf(),
-    val deferredInlineBlocks: MutableMap<String, String> = mutableMapOf(),
-    val referenceMap: MutableMap<String, String> = mutableMapOf(),
-    val referencedChapters: MutableSet<ChapterInformation>? = null
-)
