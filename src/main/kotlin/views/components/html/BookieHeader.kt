@@ -66,14 +66,12 @@ fun HTML.bookieHeader(
             script(
                 src = "{{ url_for('static', filename='ace_editor/src/ace.js') }}",
                 type = ScriptType.textJavaScript,
-                crossorigin = ScriptCrossorigin.anonymous
             ) {}
         } else {
             link(rel = "stylesheet", href = "${resourceRoot}ace_editor/css/ace.css", type = LinkType.textCss)
             script(
                 src = "${resourceRoot}ace_editor/src/ace.js",
                 type = ScriptType.textJavaScript,
-                crossorigin = ScriptCrossorigin.anonymous
             ) {}
         }
     }
