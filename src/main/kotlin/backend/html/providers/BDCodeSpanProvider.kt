@@ -23,15 +23,15 @@ class BDCodeSpanProvider(
     private val filePath: Path,
     private val codeFilesReferenced: MutableList<Path>,
     private val codeBlockIDMap: MutableList<CodeBlockHTMLData>,
+    private val defaultSpanProvider: GeneratingProvider = CodeSpanGeneratingProvider()
 ): GeneratingProvider {
 
     override fun processNode(visitor: HtmlGenerator.HtmlGeneratingVisitor, text: String, node: ASTNode) {
         val span = node.getTextInNode(text)
         val fileImportComponents = """`(.+) from (.+|\s*)`""".toRegex().matchAt(span, 0)?.groups
         if (fileImportComponents == null) {
-            // If special code span is not recognised or the file does not resolve, use
-            // standard span generator.
-            CodeSpanGeneratingProvider().processNode(visitor, text, node)
+            // If special code span is not recognised, use the standard generator.
+            defaultSpanProvider.processNode(visitor, text, node)
             return
         }
         getPath(fileImportComponents[2]?.value)?.let {
