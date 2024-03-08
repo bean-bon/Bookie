@@ -18,7 +18,7 @@ fun makeCodeField(
 
     p(classes = "code-container-language") {
         +lang.replaceFirstChar { it.uppercaseChar() }
-        +(fileName?.let { "($it)" } ?: "")
+        +(fileName?.let { " ($it)" } ?: "")
     }
     if (supportedRunLang) {
         button(classes = "run-button") {
