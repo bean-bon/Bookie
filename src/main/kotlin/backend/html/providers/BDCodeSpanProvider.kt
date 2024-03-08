@@ -45,7 +45,7 @@ class BDCodeSpanProvider(
                 val language = fileImportComponents[1]!!.value
                 val blockId = IDCreator.codeBlock.nextId
 
-                makeCodeField(visitor, language, referencedFile.name, blockId, contents)
+                visitor.consumeHtml(makeCodeField(language, blockId, referencedFile.name, contents))
 
                 codeFilesReferenced.add(referencedFile)
                 codeBlockIDMap.add(

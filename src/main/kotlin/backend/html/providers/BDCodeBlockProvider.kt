@@ -55,7 +55,7 @@ class BDCodeBlockProvider(
             }
         }
 
-        makeCodeField(visitor, lang, fileName = null, blockID, codeFound)
+        visitor.consumeHtml(makeCodeField(lang, blockID, fileName = null, codeFound))
 
         // Add the parsed content to the code block list for
         // later compilation.
