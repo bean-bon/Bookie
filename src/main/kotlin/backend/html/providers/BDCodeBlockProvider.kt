@@ -7,7 +7,6 @@ import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.html.GeneratingProvider
 import org.intellij.markdown.html.HtmlGenerator
-import java.nio.file.Path
 
 /**
  * Generator for the custom code blocks, based on the definition

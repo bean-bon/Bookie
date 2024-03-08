@@ -1,7 +1,7 @@
 package views.helpers
 
 object ImagePaths {
-    const val newProject = "images/NewBook.png"
-    const val folderIcon = "images/OpenProject.png"
-    const val bookIcon = "images/BookIcon.png"
+    const val NEW_PROJECT = "images/NewBook.png"
+    const val FOLDER_ICON = "images/OpenProject.png"
+    const val BOOK_ICON = "images/BookIcon.png"
 }

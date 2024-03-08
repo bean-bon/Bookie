@@ -2,16 +2,13 @@ package backend.html.providers
 
 import backend.extensions.getPath
 import backend.html.ChapterInformation
-import backend.html.helpers.IDCreator
 import backend.html.helpers.GenerationTracker
+import backend.html.helpers.IDCreator
 import backend.html.helpers.PathResolver
 import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.CompositeASTNode
 import org.intellij.markdown.ast.getTextInNode
-import org.intellij.markdown.ast.impl.ListCompositeNode
 import org.intellij.markdown.html.GeneratingProvider
 import org.intellij.markdown.html.HtmlGenerator
-import java.nio.file.Path
 
 /**
  * Enhanced paragraph provider enabling support for automatic

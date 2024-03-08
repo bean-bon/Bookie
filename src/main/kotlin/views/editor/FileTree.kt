@@ -207,7 +207,7 @@ private fun directory(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(ImagePaths.folderIcon),
+                        painter = painterResource(ImagePaths.FOLDER_ICON),
                         modifier = Modifier.height(10.dp),
                         contentDescription = "Directory"
                     )
@@ -292,7 +292,7 @@ private fun file(
             // TODO: add thumbnails for all file types
             if (true || fileModel.extension == "bd") {
                 Image(
-                    painter = painterResource(ImagePaths.bookIcon),
+                    painter = painterResource(ImagePaths.BOOK_ICON),
                     modifier = Modifier.height(15.dp),
                     alignment = Alignment.Center,
                     contentDescription = "Bookie file icon"

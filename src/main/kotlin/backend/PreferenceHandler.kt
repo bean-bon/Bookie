@@ -48,13 +48,13 @@ object PreferenceHandler {
 }
 
 fun PreferenceHandler.projectName(): String? =
-    readUserPreference(PreferencePaths.user.lastProjectName)
+    readUserPreference(PreferencePaths.User.LAST_PROJECT_NAME)
 
 
 object PreferencePaths {
-    object user {
-        const val lastProjectPath = "LAST_PROJECT_PATH_TO_ROOT"
-        const val lastProjectName = "LAST_PROJECT_NAME"
+    object User {
+        const val LAST_PROJECT_PATH = "LAST_PROJECT_PATH_TO_ROOT"
+        const val LAST_PROJECT_NAME = "LAST_PROJECT_NAME"
     }
 
 }

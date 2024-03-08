@@ -61,8 +61,8 @@ fun ProjectEditorMenuBar(
             EventManager.compileFlaskDialog.publishEvent()
         }
         Item("Close Project") {
-            PreferenceHandler.clearPreference(PreferencePaths.user.lastProjectPath)
-            PreferenceHandler.clearPreference(PreferencePaths.user.lastProjectName)
+            PreferenceHandler.clearPreference(PreferencePaths.User.LAST_PROJECT_PATH)
+            PreferenceHandler.clearPreference(PreferencePaths.User.LAST_PROJECT_NAME)
             EventManager.projectDirModified.publishEvent(null)
             EventManager.titleFlavourTextModified.publishEvent("")
         }

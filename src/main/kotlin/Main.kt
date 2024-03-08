@@ -31,7 +31,6 @@ import views.helpers.FileDialog
 import views.helpers.SystemUtils
 import views.menu.ProjectEditorMenuBar
 import views.menu.ProjectSelectionMenuBar
-import views.viewmodels.MDOutputViewModel
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
@@ -46,9 +45,9 @@ class LauncherViewModel: KoinComponent {
 
     init {
         PreferenceHandler.subscribeToPreferenceChange(
-            PreferencePaths.user.lastProjectPath
+            PreferencePaths.User.LAST_PROJECT_PATH
         ) { ApplicationData.projectDirectory = getPath(it) }
-        ApplicationData.projectDirectory = getPath(PreferenceHandler.readUserPreference(PreferencePaths.user.lastProjectPath))
+        ApplicationData.projectDirectory = getPath(PreferenceHandler.readUserPreference(PreferencePaths.User.LAST_PROJECT_PATH))
         EventManager.projectDirModified.subscribeToEvents { ApplicationData.projectDirectory = it }
     }
 
@@ -56,12 +55,12 @@ class LauncherViewModel: KoinComponent {
 
     val onNewProject = {
         projectSelectionModel.fileDialogTitle = "Choose a file for the new project."
-        projectSelectionModel.fileDialogAction = FileDialogAction.create
+        projectSelectionModel.fileDialogAction = FileDialogAction.Create
     }
 
     val onOpenProject = {
         projectSelectionModel.fileDialogTitle = "Open an existing project"
-        projectSelectionModel.fileDialogAction = FileDialogAction.open
+        projectSelectionModel.fileDialogAction = FileDialogAction.Open
     }
 
 }
@@ -188,8 +187,8 @@ private fun titleQueryDialog(
 }
 
 private fun setProjectPreferences(fd: FileDialog) {
-    PreferenceHandler.setUserPreference(PreferencePaths.user.lastProjectName, fd.file)
-    PreferenceHandler.setUserPreference(PreferencePaths.user.lastProjectPath, fd.directory + fd.file)
+    PreferenceHandler.setUserPreference(PreferencePaths.User.LAST_PROJECT_NAME, fd.file)
+    PreferenceHandler.setUserPreference(PreferencePaths.User.LAST_PROJECT_PATH, fd.directory + fd.file)
     EventManager.projectDirModified.publishEvent(Path.of(fd.directory, fd.file))
     EventManager.titleFlavourTextModified.publishEvent(fd.file)
 }
@@ -197,7 +196,6 @@ private fun setProjectPreferences(fd: FileDialog) {
 private val appModule = module(createdAtStart = true) {
     single { LauncherViewModel() }
     single { ProjectSelectionModel() }
-    single { MDOutputViewModel() }
     single { ProjectEditorModel(null) }
     single { ProjectExportDialogModel() }
 }

@@ -6,13 +6,12 @@ import backend.html.AceLanguageTranslation
 import backend.html.ChapterLinkInformation
 import backend.html.helpers.CodeBlockHTMLData
 import kotlinx.html.*
-import kotlinx.html.stream.createHTML
 import kotlin.io.path.div
 import kotlin.io.path.nameWithoutExtension
 
 /**
  * Build the script which follows the Bookie output.
- * @see backend.html.providers.CommonFunctions
+ * @see backend.html.providers.CommonFunctionsKt
  * @author Benjamin Groom
  */
 fun HTML.contentScriptingTemplate(

@@ -1,5 +1,6 @@
 package backend.html.providers
 
+import backend.extensions.getPath
 import backend.html.helpers.CodeBlockHTMLData
 import backend.html.helpers.IDCreator
 import org.intellij.markdown.ast.ASTNode
@@ -7,9 +8,6 @@ import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.html.CodeSpanGeneratingProvider
 import org.intellij.markdown.html.GeneratingProvider
 import org.intellij.markdown.html.HtmlGenerator
-import backend.extensions.getPath
-import backend.html.helpers.PathResolver
-import java.net.URLDecoder
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*

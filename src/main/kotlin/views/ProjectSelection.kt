@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import views.components.BasicTextLink
+import views.components.basicTextLink
 import views.helpers.FileDialog
 import views.helpers.ImagePaths
 import views.viewmodels.ProjectSelectionModel
@@ -32,9 +32,9 @@ fun ProjectSelection(
     ) {
         Column(Modifier.fillMaxHeight(0.8f)) {
             // File dialog for open and new project.
-            if (model.fileDialogAction != FileDialogAction.none) {
+            if (model.fileDialogAction != FileDialogAction.None) {
                 val mode =
-                    if (model.fileDialogAction == FileDialogAction.open) FileDialog.LOAD
+                    if (model.fileDialogAction == FileDialogAction.Open) FileDialog.LOAD
                     else FileDialog.SAVE
                 FileDialog(
                     title = model.fileDialogTitle,
@@ -42,10 +42,10 @@ fun ProjectSelection(
                     onCreate = { model.fileDialog = it },
                 ) {
                     if (model.fileDialog != null) {
-                        if (model.fileDialogAction == FileDialogAction.create) onNewProjectDialog(model.fileDialog!!)
+                        if (model.fileDialogAction == FileDialogAction.Create) onNewProjectDialog(model.fileDialog!!)
                         else onOpenProjectDialog(model.fileDialog!!)
                     }
-                    model.fileDialogAction = FileDialogAction.none
+                    model.fileDialogAction = FileDialogAction.None
                 }
             }
             // Title
@@ -56,18 +56,18 @@ fun ProjectSelection(
                 fontSize = 60.sp
             )
             // Options for projects
-            BasicTextLink(
+            basicTextLink(
                 text = "New Project",
-                imageResourcePath = ImagePaths.newProject,
+                imageResourcePath = ImagePaths.NEW_PROJECT,
                 imageDescription = "New File",
                 height = 40.dp,
                 fontSize = 35.sp,
                 textPaddingValues = PaddingValues(start = 10.dp),
                 onClick = onClickNewProject
             )
-            BasicTextLink(
+            basicTextLink(
                 text = "Open",
-                imageResourcePath = ImagePaths.folderIcon,
+                imageResourcePath = ImagePaths.FOLDER_ICON,
                 imageDescription = "Choose an existing project to open.",
                 height = 40.dp,
                 fontSize = 35.sp,
@@ -82,7 +82,7 @@ fun ProjectSelection(
 }
 
 enum class FileDialogAction {
-    none,
-    create,
-    open
+    None,
+    Create,
+    Open
 }

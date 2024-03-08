@@ -25,9 +25,9 @@ internal object IDCreator {
         val h1 = IDBuilder("h1")
         val h2 = IDBuilder("h2")
         val h3 = IDBuilder("h3")
-        val h4 = IDBuilder("h4")
-        val h5 = IDBuilder("h5")
-        val h6 = IDBuilder("h6")
+        private val h4 = IDBuilder("h4")
+        private val h5 = IDBuilder("h5")
+        private val h6 = IDBuilder("h6")
 
         fun getBuilderFor(index: Int): IDBuilder? = when (index) {
             1 -> h1

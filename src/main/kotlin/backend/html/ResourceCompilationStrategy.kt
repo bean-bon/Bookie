@@ -14,6 +14,7 @@ interface ResourceCompilationStrategy {
     fun isAllowed(fileName: Path, outputDirectory: Path): Boolean
 }
 
+@Suppress("Unused")
 object ResourceCompilationStrategies {
     val NONE = object: ResourceCompilationStrategy {
         override fun isAllowed(fileName: Path, outputDirectory: Path): Boolean = false
@@ -22,7 +23,7 @@ object ResourceCompilationStrategies {
         override fun isAllowed(fileName: Path, outputDirectory: Path): Boolean =
             !(outputDirectory / fileName.fileName).exists()
     }
-    fun IF_SMALLER_THAN(maxMB: Int) = object: ResourceCompilationStrategy {
+    fun ifSmallerThan(maxMB: Int) = object: ResourceCompilationStrategy {
         override fun isAllowed(fileName: Path, outputDirectory: Path): Boolean =
             (fileName.fileSize() / 1024) < maxMB
     }

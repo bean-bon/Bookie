@@ -24,7 +24,6 @@ import kotlin.io.path.*
  * The main compiler for .bd files.
  * @param openFiles Container for the open files in the editor, storing the most up-to-date
  * representation of files.
- * @param copyMode The strategy to be used when copying the resources used by Bookie files.
  * @author Benjamin Groom
  */
 class BookieCompiler(
@@ -265,12 +264,6 @@ class BookieCompiler(
         },
         codeBlockMapping = compilationData.codeBlockMap
     )
-
-    private fun createOutputPath(dirPath: Path?, relativeContainer: Path?, fileName: String): Path {
-        val base = dirPath ?: ApplicationData.projectDirectory!!
-        val relativePath = relativeContainer?.let { (it / "$fileName.html").toString() } ?: "$fileName.html"
-        return base / relativePath
-    }
 
     private fun firstRoundProcess(
         rawText: String,
