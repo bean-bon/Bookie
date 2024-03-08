@@ -60,7 +60,7 @@ class BDCodeSpanProvider(
             } else {
                 visitor.consumeHtml("<p style=\"color: red\"><strong>Couldn't resolve \"$it\" to a valid file</strong></p>")
             }
-        } ?: CodeSpanGeneratingProvider().processNode(visitor, text, node)
+        } ?: defaultSpanProvider.processNode(visitor, text, node)
 
     }
 
