@@ -41,9 +41,10 @@ class BDParagraphProvider(
         // Ensures that quiz blocks are only recognised if they are immediately followed by the answer list.
         onStartProcessing()
         if (!node.children.all { it.type.name in permittedNames }) {
-            if (checkQuizSyntax(text, node)) return
             return inlineParagraphProvider.processNode(visitor, text, node)
         }
+        // Check if the paragraph matches a quiz block question.
+        if (checkQuizSyntax(text, node)) return
         // Add placeholder for deferred paragraph to be replaced after the initial processing.
         var paragraph = ""
         for (v in node.children) {
