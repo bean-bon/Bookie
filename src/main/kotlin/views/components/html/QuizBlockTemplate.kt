@@ -19,23 +19,28 @@ fun quizBlockTemplate(
         }
     }
     div("answer-container") {
+        attributes["aria-label"] = "Quiz block: $question"
         for (a in answers) {
-            div {
-                button(classes = "answer ${if (a.correct) "correct" else "incorrect"} untouched-answer") {
-                    onClick = "revealAnswer(this, this.closest('.answer-container'))"
-                    unsafe {
-                        raw(a.answerHTMLPlaceholder)
-                    }
-                    p(classes = "description") {
-                        a.explanation?.let {
-                            +it
-                        } ?: run {
-                            if (a.correct) +"Correct"
-                            else +"Incorrect"
-                        }
-                    }
-
+            button(classes = "answer ${if (a.correct) "correct" else "incorrect"} untouched-answer") {
+                attributes["tabindex"] = "0"
+                onClick = "revealAnswer(this, this.closest('.answer-container'))"
+                unsafe {
+                    raw(a.answerHTMLPlaceholder)
                 }
+                p(classes = "description") {
+                    attributes["tabindex"] = "-1"
+                    attributes["aria-hidden"] = "true"
+                    attributes["aria-live"] = "polite"
+                    attributes["aria-label"] = "is ${if (a.correct) "correct" else "incorrect"}: ${a.explanation ?: ""}"
+                    a.explanation?.let {
+                        +it
+                    } ?: run {
+                        attributes["tabindex"] = "-1"
+                        if (a.correct) +"Correct"
+                        else +"Incorrect"
+                    }
+                }
+
             }
         }
     }

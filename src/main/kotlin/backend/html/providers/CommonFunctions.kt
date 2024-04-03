@@ -14,6 +14,9 @@ fun makeCodeField(
     codeFound: String
 ) = createHTML().div(classes = "code-container") {
 
+    attributes["tabindex"] = "0"
+    attributes["aria-label"] = "$lang code block for file $fileName"
+
     val supportedRunLang = lang.lowercase() in supportedLanguagesForRunning
 
     p(classes = "code-container-language") {
@@ -36,8 +39,12 @@ fun makeCodeField(
     }
     if (supportedRunLang) {
         div(classes = "output-container") {
-            p(classes = "run-result-text") { id = "$blockId-run-result" }
+            p(classes = "run-result-text") {
+                id = "$blockId-run-result"
+                attributes["aria-live"] = "assertive"
+            }
             textArea(classes = "code-output-text") {
+                attributes["aria-live"] = "polite"
                 id = "$blockId-output"
                 readonly = true
                 +"Run the code to see it's output."

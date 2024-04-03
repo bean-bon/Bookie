@@ -24,7 +24,7 @@ class BDQuizProvider(
                 val inlineId = IDCreator.inlineBlock.nextId
                 answersFound.add(
                     QuizAnswer(
-                        answerHTMLPlaceholder = "<div class=\"answer-content\">$inlineId</div>",
+                        answerHTMLPlaceholder = "<div class=\"answer-content\" tabindex=\"-1\">$inlineId</div>",
                         explanation =
                             if (explanation.isNotEmpty())
                                 explanation

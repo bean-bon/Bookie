@@ -20,6 +20,19 @@ fun HTML.contentScriptingTemplate(
     chapterLinkInformation: ChapterLinkInformation
 ): SCRIPT.() -> Unit = {
     crossorigin = ScriptCrossorigin.anonymous
+    unsafe {
+        raw(
+            """
+                window.addEventListener("load", (event) => {
+                    console.log("page loaded");
+                    document.querySelectorAll(".katex").forEach((ele) => {
+                        ele.setAttribute("role", "img");
+                        ele.setAttribute("aria-label", "KaTeX Math Expression")
+                    });
+                });
+            """.trimIndent()
+        )
+    }
     if (codeBlocks.isNotEmpty()) {
         unsafe {
             raw(readTextFromResource("StaticCode.js"))
@@ -80,8 +93,10 @@ fun HTML.contentScriptingTemplate(
                 const answers = parent.querySelectorAll('.answer');
                 answers.forEach(function(child) {
                     child.classList.add('untouched-answer');
+                    child.querySelector('.description').setAttribute("aria-hidden", "true");
                 });
                 element.classList.remove('untouched-answer');
+                element.querySelector('.description').setAttribute("aria-hidden", "false");
             };
             """.trimIndent()
         )

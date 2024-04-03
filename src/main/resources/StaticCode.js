@@ -37,24 +37,17 @@ function runCode(language, code_content, file_name, output_element_id, run_resul
             const exit_code = json.exit_code;
             const output_element = document.getElementById(output_element_id);
             const run_result_element = document.getElementById(run_result_element_id);
-            output_element.textContent = output;
+            run_result_element.textContent = "";
             run_result_element.textContent = exit_code;
+            output_element.textContent = "";
+            output_element.textContent = output.trim();
         })
         .catch(_ => {
             const outputElement = document.getElementById(output_element_id)
+            const run_result_element = document.getElementById(run_result_element_id);
+            run_result_element.textContent = ""
+            run_result_element.textContent = "Failed to execute code."
+            outputElement.textContent = ""
             outputElement.textContent = "Encountered an error while trying to decode server response, there may be a connection issue."
         });
-}
-
-function toggleContentsVisibility(toggleButton, contentsListID) {
-    const contentsList = document.getElementById(contentsListID);
-    if (contentsList.style.display === "none") {
-        toggleButton.classes.add('open')
-        toggleButton.classes.remove('closed')
-        contentsList.style.display = "block"
-    } else {
-        toggleButton.classes.add('closed')
-        toggleButton.classes.remove('open')
-        contentsList.style.display = "none"
-    }
 }

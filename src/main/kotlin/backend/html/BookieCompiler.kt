@@ -305,7 +305,7 @@ class BookieCompiler(
         for ((marker, paragraph) in flavour.compilationData.deferredParagraphs) {
             var processed = paragraph
             for ((refKey, index) in flavour.compilationData.referenceMap) {
-                processed = processed.replace("{$refKey}", "<a href=\"#$refKey\">$index</a>")
+                processed = processed.replace("{$refKey}", "<a href=\"#$refKey\" aria-label=\"Hyperlink to figure $index\">$index</a>")
             }
             // Replace placeholder with processed content.
             newHtml = newHtml.replace(marker, processed)

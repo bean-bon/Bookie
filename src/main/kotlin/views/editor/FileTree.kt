@@ -209,7 +209,7 @@ private fun directory(
                     Image(
                         painter = painterResource(ImagePaths.FOLDER_ICON),
                         modifier = Modifier.height(10.dp),
-                        contentDescription = "Directory"
+                        contentDescription = "Directory: ${PathResolver.getRelativeFilePath(model.path)}"
                     )
                     Text(
                         model.path.name,
@@ -336,7 +336,9 @@ fun fileModificationDialog(
             Column {
                 TextField(
                     newFileName,
+
                     singleLine = true,
+                    label = { Text("New file name") },
                     onValueChange = {
                         newFileName = it.replace(".", "")
                         conflictingNewFileName =

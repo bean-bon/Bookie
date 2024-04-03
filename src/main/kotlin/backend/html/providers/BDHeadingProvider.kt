@@ -35,7 +35,7 @@ class BDHeadingProvider(
                 )
             )
             visitor.consumeHtml(
-                "<h$level id=${it.drop(1).dropLast(1)}>" +
+                "<h$level id=\"${it.drop(1).dropLast(1)}\" tabindex=\"0\">" +
                         "${title?.value?.replace(it, "")?.trim()}" +
                         "</h$level>\n"
             )
@@ -54,7 +54,7 @@ class BDHeadingProvider(
                     level = level
                 )
             )
-            visitor.consumeHtml("<h$level id=\"$generatedId\">$sectionIndex $content</h$level>\n")
+            visitor.consumeHtml("<h$level id=\"$generatedId\" tabindex=\"0\">$sectionIndex $content</h$level>\n")
         }
     }
 }

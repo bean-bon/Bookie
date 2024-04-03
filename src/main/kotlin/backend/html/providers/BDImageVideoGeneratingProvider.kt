@@ -89,18 +89,18 @@ class BDImageVideoGeneratingProvider(
         id?.let {
             referenceMap[it] = IDCreator.makeFigureNumberForCurrentState()
         }
-        if (asFigure) visitor.consumeHtml("<figure>\n")
+        if (asFigure) visitor.consumeHtml("<figure tabindex=\"0\" aria-labelledby=\"${id}_caption\">\n")
         visitor.consumeTagOpen(
             node, "img",
             id?.let { "id=\"$it\"" } ?: "",
             "src=\"${makeSourceLink(src.toString())}\"",
-            "alt=\"$alt\"",
+            "alt=\"$alt image\"",
             "class=\"figure img-figure\"",
             autoClose = true
         )
         if (asFigure) {
-            val caption = id?.let { "Figure ${IDCreator.makeFigureNumberForCurrentState()}: $alt" } ?: alt
-            visitor.consumeHtml("\n<figcaption class=\"caption img-figure-caption\">$caption</figcaption>\n")
+            val caption = id?.let { "Figure ${IDCreator.makeFigureNumberForCurrentState()}: $alt" } ?: "$alt image figure"
+            visitor.consumeHtml("\n<figcaption id=\"${id}_caption\" class=\"caption img-figure-caption\">$caption</figcaption>\n")
             visitor.consumeHtml("</figure>\n")
         }
     }
@@ -116,20 +116,20 @@ class BDImageVideoGeneratingProvider(
         id?.let {
             referenceMap[it] = IDCreator.makeFigureNumberForCurrentState()
         }
-        if (asFigure) visitor.consumeHtml("<figure>\n")
+        if (asFigure) visitor.consumeHtml("<figure tabindex=\"0\" aria-labelledby=\"${id}_caption\">\n")
         visitor.consumeHtml("<p>")
         visitor.consumeTagOpen(node, "video",
             id?.let { "id=\"$it\"" } ?: "",
             "src=\"${makeSourceLink(src.toString())}\"",
-            "alt=\"$alt\"",
+            "alt=\"$alt video\"",
             "class=\"figure video-figure\"",
             "controls",
             autoClose = true
         )
         visitor.consumeHtml("</p>")
         if (asFigure) {
-            val caption = "Figure ${IDCreator.makeFigureNumberForCurrentState()}: $alt"
-            visitor.consumeHtml("\n<figcaption class=\"caption video-figure-caption\">$caption</figcaption>\n")
+            val caption = "Video figure ${IDCreator.makeFigureNumberForCurrentState()}: $alt"
+            visitor.consumeHtml("\n<figcaption id=\"${id}_caption\" class=\"caption video-figure-caption\">$caption</figcaption>\n")
             visitor.consumeHtml("</figure>\n")
         }
     }
