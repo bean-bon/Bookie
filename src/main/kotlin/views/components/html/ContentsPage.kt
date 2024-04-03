@@ -12,6 +12,8 @@ fun bookieContents(
     buildForFlask: Boolean
 ): String = "<!DOCTYPE html>\n" + createHTML().html {
 
+    lang = "en-gb"
+
     head(block = bookieHeader(pageTitle, buildForFlask, codeBlocks.isNotEmpty(), ""))
 
     body {

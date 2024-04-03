@@ -248,7 +248,9 @@ class BookieCompiler(
         outputRoot = outputRoot,
         relativeOutputPath = relativeOutputPath,
         html = chapterTemplate(
-            compiledHtml = compiledHTML,
+            compiledHtml = compiledHTML
+                .replace("<body>", "")
+                .replace("</body>", ""),
             codeBlocks = compilationData.codeBlockMap,
             chapterLinkInformation = chapterLinkInformation,
             buildFlaskTemplate = buildFlaskTemplate,
@@ -291,10 +293,7 @@ class BookieCompiler(
                 toProcess,
                 MarkdownParser(flavour).buildMarkdownTreeFromString(toProcess),
                 flavour
-            )
-                .generateHtml()
-                .replace("<body>", "")
-                .replace("</body>", "")
+            ).generateHtml()
             newHtml = newHtml.replace(
                 blockKey,
                 inlineHTML

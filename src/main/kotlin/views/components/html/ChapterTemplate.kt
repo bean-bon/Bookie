@@ -18,6 +18,8 @@ fun chapterTemplate(
     buildFlaskTemplate: Boolean = false
 ) = "<!DOCTYPE html>\n" + createHTML().html {
 
+    lang = "en-gb"
+
     val nestedSize = chapterLinkInformation.currentInfo.path.split("/").size
     val rootDirectory = "../".repeat(nestedSize - 1)
     val isPreview = chapterLinkInformation.currentInfo.index == -1
@@ -39,14 +41,9 @@ fun chapterTemplate(
         if (contents.isNotEmpty()) {
             div {
                 id = "contents-container"
-//            button(classes = "open") {
-//                id = "contents-toggle"
-//                onClick = "toggleContentsVisibility(this, 'contents-list')"
                 p(classes = "contents-title") {
                     +"Contents"
-//                    span(classes = "triangle")
                 }
-//            }
                 div {
                     id = "contents-list"
                     for (h in contents.filter { it.level <= maxContentsSectionLevel }) {

@@ -21,7 +21,8 @@ fun HTML.bookieHeader(
         );
     """
 
-    title = titleString
+    meta(charset = "UTF-8")
+    title(titleString)
 
     link(
         href =
@@ -34,7 +35,6 @@ fun HTML.bookieHeader(
     // KaTeX dependencies.
     script(
         src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js",
-        type = ScriptType.textJavaScript,
         crossorigin = ScriptCrossorigin.anonymous
     ) {
         defer = true
@@ -64,14 +64,12 @@ fun HTML.bookieHeader(
         if (buildForFlask) {
             link(rel = "stylesheet", href = "{{ url_for('static', filename='ace_editor/css/ace.css') }}", type = LinkType.textCss)
             script(
-                src = "{{ url_for('static', filename='ace_editor/src/ace.js') }}",
-                type = ScriptType.textJavaScript,
+                src = "{{ url_for('static', filename='ace_editor/src/ace.js') }}"
             ) {}
         } else {
             link(rel = "stylesheet", href = "${resourceRoot}ace_editor/css/ace.css", type = LinkType.textCss)
             script(
-                src = "${resourceRoot}ace_editor/src/ace.js",
-                type = ScriptType.textJavaScript,
+                src = "${resourceRoot}ace_editor/src/ace.js"
             ) {}
         }
     }
