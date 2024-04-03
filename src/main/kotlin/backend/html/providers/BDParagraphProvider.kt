@@ -96,7 +96,7 @@ class BDParagraphProvider(
             }
         }
         val paragraphID = IDCreator.paragraph.nextId
-        deferredParagraphs["%%$paragraphID"] = "<p>$paragraph</p>"
+        deferredParagraphs["%%$paragraphID"] = "<p tabindex=\"0\">$paragraph</p>"
         visitor.consumeHtml("%%$paragraphID")
     }
 

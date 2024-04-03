@@ -51,3 +51,8 @@ function runCode(language, code_content, file_name, output_element_id, run_resul
             outputElement.textContent = "Encountered an error while trying to decode server response, there may be a connection issue."
         });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+   const answers = document.querySelectorAll(".answer-content p")
+    answers.forEach((ele) => { ele.removeAttribute("tabindex") })
+});
