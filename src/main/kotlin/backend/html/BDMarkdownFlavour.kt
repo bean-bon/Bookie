@@ -22,8 +22,8 @@ import java.util.logging.Logger
  * @author Benjamin Groom
  */
 class BDMarkdownFlavour(
-    val compilationData: CompilationData,
     private val baseFlavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
+    val compilationData: CompilationData,
     val compileForFlask: Boolean = false
 ) : MarkdownFlavourDescriptor {
 

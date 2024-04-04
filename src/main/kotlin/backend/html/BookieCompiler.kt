@@ -183,7 +183,7 @@ class BookieCompiler(
             contentsPage,
             referencedChapters = mutableSetOf()
         )
-        val bdMarkdownFlavour = BDMarkdownFlavour(compilationData)
+        val bdMarkdownFlavour = BDMarkdownFlavour(compilationData = compilationData)
         val initialProcessing = firstRoundProcess(text, bdMarkdownFlavour)
         return Pair(makeContentsHTMLCompilationModel(
             inputPath = contentsPage,
@@ -207,7 +207,7 @@ class BookieCompiler(
         if (file.extension != "bd") return null
         val text = openFiles[file]?.textBoxContent ?: file.readText()
         val compilationData = CompilationData(file)
-        val bdMarkdownFlavour = BDMarkdownFlavour(compilationData, compileForFlask = buildForFlask)
+        val bdMarkdownFlavour = BDMarkdownFlavour(compilationData = compilationData, compileForFlask = buildForFlask)
         val initialProcessing = firstRoundProcess(text, bdMarkdownFlavour)
         IDCreator.resetCounters()
         GenerationTracker.reset()
