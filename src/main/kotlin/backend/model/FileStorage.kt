@@ -47,16 +47,6 @@ data class DirectoryModel(
     // Theoretically, doing this will recompose the whole file tree any time
     // the event is received.
     init {
-        EventManager.renameFile.subscribeToEvents { p ->
-            if (path == p.first) {
-                path = p.first.parent / p.second
-                contents.clear()
-                contents.addAll(path
-                    .listDirectoryEntries()
-                    .map { FileStorage.makeTree(it) }
-                )
-            }
-        }
         EventManager.projectFilesAdded.subscribeToEvents {
             if (path.isDirectory()) {
                 val relevantFiles = it.filter { p -> p.parent == path && !contents.contains(p) }
