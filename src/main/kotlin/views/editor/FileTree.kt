@@ -4,6 +4,8 @@ import backend.model.ApplicationData
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -74,19 +76,18 @@ fun FileTree(
             } else null
         )
     }) {
-        Column(
+        LazyColumn (
             modifier = Modifier
-                .fillMaxHeight(1f)
+                .fillMaxHeight()
                 .fillMaxWidth()
                 .background(MaterialTheme.colors.surface)
-                .verticalScroll(rememberScrollState())
+//                .verticalScroll(rememberScrollState())
                 .horizontalScroll(rememberScrollState())
                 .semantics { this.contentDescription = "Project file tree" }
         ) {
-            for (f in fileTreeModel.contents
+            items(fileTreeModel.contents
                 .filter { !it.isHidden }
-                .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })
-            ) {
+                .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })) { f ->
                 if (f.isDirectory) {
                     directory(
                         FileStorage.makeTree(f.path) as DirectoryModel,
@@ -230,8 +231,8 @@ private fun directory(
             AnimatedVisibility(isExpanded, Modifier.animateContentSize()) {
                 Column {
                     for (f in model.contents
-                        .filter { !it.isHidden }
-                        .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })
+                            .filter { !it.isHidden }
+                            .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })
                     ) {
                         if (f.isDirectory) {
                             directory(
