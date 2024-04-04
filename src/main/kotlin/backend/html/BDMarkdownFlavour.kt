@@ -11,6 +11,7 @@ import org.intellij.markdown.lexer.MarkdownLexer
 import org.intellij.markdown.parser.LinkMap
 import org.intellij.markdown.parser.MarkerProcessorFactory
 import org.intellij.markdown.parser.sequentialparsers.SequentialParserManager
+import java.util.logging.Logger
 
 /**
  * The BDMarkdownFlavour takes a base MarkdownFlavourDescriptor for the
@@ -36,7 +37,7 @@ class BDMarkdownFlavour(
         val generatorMap = baseFlavour.createHtmlGeneratingProviders(linkMap, baseURI).toMutableMap()
 
         // Image provider.
-        setElementGeneratorGivenKeyLambda(
+        setElementGeneratorGivenKey(
             generatorMap,
             BDImageVideoGeneratingProvider(
                 baseFile = compilationData.file,
@@ -45,29 +46,33 @@ class BDMarkdownFlavour(
                 compileForFlask = compileForFlask,
                 linkMap,
                 baseURI
-            ).makeXssSafe(true)
-        ) { it.name == "IMAGE" }
+            ).makeXssSafe(true),
+            "IMAGE"
+        )
         // Code fence provider.
-        setElementGeneratorGivenKeyLambda(
+        setElementGeneratorGivenKey(
             generatorMap,
-            BDCodeBlockProvider(compilationData.codeBlockMap)
-        ) { it.name == "CODE_FENCE" }
+            BDCodeBlockProvider(compilationData.codeBlockMap),
+            "CODE_FENCE"
+        )
         // Code span provider.
-        setElementGeneratorGivenKeyLambda(
+        setElementGeneratorGivenKey(
             generatorMap,
             BDCodeSpanProvider(
                 filePath = compilationData.file,
                 codeFilesReferenced = compilationData.resourcesUtilised,
                 codeBlockIDMap = compilationData.codeBlockMap
-            )
-        ) { it.name == "CODE_SPAN" }
+            ),
+            "CODE_SPAN"
+        )
         // Heading providers.
-        for (i in 1..6) setElementGeneratorGivenKeyLambda(
+        for (i in 1..6) setElementGeneratorGivenKey(
             generatorMap,
-            BDHeadingProvider(level = i, headingData = compilationData.headingData)
-        ) { it.name == "ATX_$i"}
+            BDHeadingProvider(level = i, headingData = compilationData.headingData),
+            "ATX_$i"
+        )
         // Paragraph provider.
-        setElementGeneratorGivenKeyLambda(
+        setElementGeneratorGivenKey(
             generatorMap,
             BDParagraphProvider(
                 deferredParagraphs = compilationData.deferredParagraphs,
@@ -78,26 +83,29 @@ class BDMarkdownFlavour(
                 onStartProcessing = { activeQuizQuestion = null },
                 onQuizSyntaxRecognised = { activeQuizQuestion = it }
             ),
-        ) { it.name == "PARAGRAPH" }
-        setElementGeneratorGivenKeyLambda(
+            "PARAGRAPH"
+        )
+        setElementGeneratorGivenKey(
             generatorMap,
             BDQuizProvider(
                 { activeQuizQuestion },
                 deferredInlineBlocks = compilationData.deferredInlineBlocks,
                 generatorMap[generatorMap.keys.first { it.name == "UNORDERED_LIST" }]!!
-            )
-        ) { it.name == "UNORDERED_LIST" }
+            ),
+            "UNORDERED_LIST"
+        )
         return generatorMap
     }
 
-    private inline fun setElementGeneratorGivenKeyLambda(
+    private fun setElementGeneratorGivenKey(
         map: MutableMap<IElementType, GeneratingProvider>,
         newGeneratingProvider: GeneratingProvider,
-        crossinline keyMatch: (IElementType) -> Boolean
+        keyMatch: String
     ) =
-        map.keys.firstOrNull(keyMatch)?.let {
+        map.keys.firstOrNull { it.name == keyMatch }?.let {
             map[it] = newGeneratingProvider
-        } ?: println("WARNING: could not find existing Markdown provider")
+        } ?: Logger.getLogger("Bookie Compiler")
+            .severe("Could not find existing Markdown provider $keyMatch in the provided map.")
 
     override fun createInlinesLexer(): MarkdownLexer =
         baseFlavour.createInlinesLexer()
