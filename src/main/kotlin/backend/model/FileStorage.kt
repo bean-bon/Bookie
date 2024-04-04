@@ -59,7 +59,7 @@ data class DirectoryModel(
         }
         EventManager.projectFilesAdded.subscribeToEvents {
             if (path.isDirectory()) {
-                val relevantFiles = it.filter { p -> p.parent == path }
+                val relevantFiles = it.filter { p -> p.parent == path && !contents.contains(p) }
                 for (new in relevantFiles) {
                     if (new !in contents) contents.add(new)
                 }

@@ -80,6 +80,7 @@ class ProjectEditorModel(
      * be favoured.
      */
     private fun buildFile(path: Path) {
+        if (path.extension != "bd") return
         val outFolder = ApplicationData.projectDirectory!! / "out"
         val relativePath = PathResolver.getRelativeFilePath(path)
         if (!outFolder.exists()) {
