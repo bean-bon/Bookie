@@ -3,6 +3,8 @@ package views
 import backend.model.ApplicationData
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
 import views.components.SplitView
 //import views.editor.BookieMDOutput
 import backend.model.DirectoryModel
@@ -17,6 +19,8 @@ fun ProjectEditor(
     model: ProjectEditorModel,
     onLoad: () -> Unit,
 ) {
+
+    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(ApplicationData.projectDirectory) {
         onLoad()

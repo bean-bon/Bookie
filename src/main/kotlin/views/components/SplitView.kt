@@ -15,9 +15,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import java.awt.Cursor
+import java.awt.Toolkit
 
 /**
  * Composable for splitting two views with a movable divider.
@@ -69,6 +73,7 @@ fun SplitView(
                         .zIndex(1f)
                         .background(MaterialTheme.colors.primaryVariant)
                         .hoverable(hoveredSplitter)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)))
                         .draggable(
                             orientation = Orientation.Horizontal,
                             state = rememberDraggableState { delta ->

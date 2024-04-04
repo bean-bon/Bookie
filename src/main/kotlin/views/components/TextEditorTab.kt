@@ -10,6 +10,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import backend.html.helpers.PathResolver
@@ -52,7 +54,14 @@ fun TextEditorTab(
                 )
                 BasicText(
                     "X",
-                    modifier = Modifier.clickable { onClose(model) }.padding(5.dp)
+                    modifier = Modifier
+                        .clickable { onClose(model) }
+                        .padding(5.dp)
+                        .semantics {
+                            this.text = AnnotatedString("Close editor tab for ${model.file.name}")
+                            this.role = Role.Button
+                            this.selected = selected
+                        }
                 )
             }
             if (selected) {

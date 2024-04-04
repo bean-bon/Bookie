@@ -11,7 +11,10 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import backend.EventManager
 import views.components.TextEditorTab
@@ -21,7 +24,7 @@ import kotlin.io.path.name
 
 @Composable
 fun TextEditor(
-    model: TextEditorViewModel,
+    model: TextEditorViewModel
 ) {
 
     // Code editor area.
@@ -87,6 +90,7 @@ fun TextEditor(
                         }
                     )
                     .horizontalScroll(ScrollState(scrollOffset.toInt()))
+                    .semantics { this.contentDescription = "Open file tab list" }
             ) {
                 for (file in model.openFiles) {
                     TextEditorTab(

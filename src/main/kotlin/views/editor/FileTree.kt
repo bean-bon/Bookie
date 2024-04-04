@@ -7,8 +7,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -75,6 +81,7 @@ fun FileTree(
                 .background(MaterialTheme.colors.surface)
                 .verticalScroll(rememberScrollState())
                 .horizontalScroll(rememberScrollState())
+                .semantics { this.contentDescription = "Project file tree" }
         ) {
             for (f in fileTreeModel.contents
                 .filter { !it.isHidden }
@@ -97,7 +104,7 @@ fun FileTree(
 @Composable
 private fun directory(
     model: DirectoryModel,
-    leftPadding: Dp,
+    leftPadding: Dp
 ) {
 
     var isExpanded by remember { mutableStateOf(false) }
@@ -135,7 +142,7 @@ private fun directory(
         } else if (renameDirectory) {
             fileModificationDialog(
                 model.path,
-                title = { Text("Rename ${model.path}", fontWeight = FontWeight.Bold) },
+                title = { Text("Rename ${PathResolver.getRelativeFilePath(model.path)} folder", fontWeight = FontWeight.Bold) },
                 confirmText = "Rename folder",
                 modifyExisting = true,
                 onDismissRequest = { renameDirectory = false }
@@ -227,7 +234,10 @@ private fun directory(
                         .sortedWith(compareBy<FileStorage> { !it.isDirectory }.thenBy { it.name.uppercase() })
                     ) {
                         if (f.isDirectory) {
-                            directory(FileStorage.makeTree(f.path) as DirectoryModel, leftPadding + 10.dp)
+                            directory(
+                                FileStorage.makeTree(f.path) as DirectoryModel,
+                                leftPadding + 10.dp
+                            )
                         } else {
                             file(FileStorage.makeTree(f.path), leftPadding + 10.dp)
                         }
@@ -241,7 +251,7 @@ private fun directory(
 @Composable
 private fun file(
     fileModel: FileStorage,
-    leftPadding: Dp,
+    leftPadding: Dp
 ) {
 
     var showDeletionDialog by remember { mutableStateOf(false) }
@@ -254,7 +264,7 @@ private fun file(
     } else if (renaming) {
         fileModificationDialog(
             fileModel.path,
-            title = { Text("Rename ${fileModel.path}", fontWeight = FontWeight.Bold) },
+            title = { Text("Rename ${PathResolver.getRelativeFilePath(fileModel.path)} file", fontWeight = FontWeight.Bold) },
             confirmText = "Rename file",
             modifyExisting = true,
             onDismissRequest = { renaming = false }
@@ -283,8 +293,9 @@ private fun file(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = leftPadding).clickable {
-                if (TextEditorViewModel.fileAllowedForBookieEditor(fileModel.path))
+                if (TextEditorViewModel.fileAllowedForBookieEditor(fileModel.path)) {
                     EventManager.openFile.publishEvent(fileModel.path)
+                }
                 else
                     SystemUtils.openFileWithDefaultApplication(fileModel.path)
             }
@@ -325,18 +336,40 @@ fun fileModificationDialog(
     var conflictingNewFileName by remember { mutableStateOf(false) }
     var startsWithNumber by remember { mutableStateOf(false) }
     var reservedName by remember { mutableStateOf(false) }
-
     val extension = if (!file.isDirectory()) ".${file.extension}" else ""
 
+    val hasError = remember(conflictingNewFileName, startsWithNumber, reservedName) {
+        conflictingNewFileName || startsWithNumber || reservedName
+    }
+
+    val errorDescription = remember(hasError) {
+        if (conflictingNewFileName) "${if (file.isDirectory()) "Folder" else "File"} already exists."
+        else if (startsWithNumber) "The new name cannot start with a number."
+        else if (reservedName) "That name is reserved, please choose another."
+        else ""
+    }
+
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
     AlertDialog(
-        modifier = Modifier.zIndex(-1f),
+        modifier = Modifier
+            .zIndex(-1f)
+            .focusRequester(focusRequester)
+            .focusable(true),
         onDismissRequest = onDismissRequest,
         title = title,
         text = {
             Column {
                 TextField(
                     newFileName,
-
+                    modifier = Modifier.semantics {
+                        this.text = AnnotatedString(newFileName)
+                        this.contentDescription = "Enter new file name for ${PathResolver.getRelativeFilePath(file)}"
+                    },
                     singleLine = true,
                     label = { Text("New file name") },
                     onValueChange = {
@@ -350,11 +383,11 @@ fun fileModificationDialog(
                     }
                 )
                 Text(
-                    if (conflictingNewFileName) "${if (file.isDirectory()) "Folder" else "File"} already exists."
-                    else if (startsWithNumber) "The new name cannot start with a number."
-                    else if (reservedName) "That name is reserved, please choose another."
-                    else "",
-                    color = Color(255, 0, 0, if (conflictingNewFileName || startsWithNumber || reservedName) 255 else 0)
+                    errorDescription,
+                    modifier = Modifier
+                        .semantics { this.text = AnnotatedString("Error for new name $newFileName. $errorDescription") }
+                        .focusable(hasError),
+                    color = Color(255, 0, 0, if (hasError) 255 else 0)
                 )
             }
         },
@@ -383,23 +416,38 @@ fun deletionDialog(
     file: Path,
     onDismissRequest: () -> Unit,
 ) {
+
+    val deletionDescription = if (file.isDirectory()) {
+        "Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\" " +
+                    "and everything inside (${file.childCount()} files)?"
+    } else {
+        "Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\"?"
+    }
+
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
     AlertDialog(
-        modifier = Modifier.zIndex(-1f),
+        modifier = Modifier
+            .zIndex(-1f)
+            .focusRequester(focusRequester)
+            .focusable(true),
         onDismissRequest = onDismissRequest,
         title = {
             Column(Modifier.padding(bottom = 10.dp)) {
-                if (file.isDirectory()) {
-                    Text(
-                        "Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\" " +
-                                "and everything inside (${file.childCount()} files)?"
-                    )
-                } else {
-                    Text("Are you sure you want to delete \"${PathResolver.getRelativeFilePath(file)}\"?")
-                }
+                Text(deletionDescription)
             }
         },
         dismissButton = {
-            Button(onDismissRequest) {
+            Button(
+                onDismissRequest,
+                Modifier.semantics(true) {
+                    this.text = AnnotatedString("Cancel deletion of ${PathResolver.getRelativeFilePath(file)}")
+                }
+            ) {
                 Text("Cancel")
             }
         },
@@ -409,6 +457,9 @@ fun deletionDialog(
                     EventManager.deleteFile.publishEvent(file)
                     EventManager.projectFilesDeleted.publishEvent(listOf(file))
                     onDismissRequest()
+                },
+                Modifier.semantics(true) {
+                    this.text = AnnotatedString("Confirm deletion of ${PathResolver.getRelativeFilePath(file)}")
                 }
             ) {
                 Text("Confirm deletion", color = Color.Red)
