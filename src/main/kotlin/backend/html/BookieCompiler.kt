@@ -2,6 +2,7 @@ package backend.html
 
 import backend.model.ApplicationData
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.window.Notification
 import backend.EventManager
 import backend.helpers.decompressZipFile
 import backend.html.helpers.IDCreator
@@ -18,7 +19,9 @@ import views.viewmodels.TextEditorEntryFieldModel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.logging.Logger
 import kotlin.io.path.*
+import kotlin.system.measureTimeMillis
 
 /**
  * The main compiler for .bd files.
@@ -42,6 +45,7 @@ class BookieCompiler(
             filePath.writeText(model.html)
             for (dependency in model.fileResources) {
                 val depOutputPath = model.outputRoot / dependency.relativeTo(ApplicationData.projectDirectory!!)
+                if (!dependency.exists()) continue
                 Files.createDirectories(depOutputPath.parent)
                 Files.copy(
                     dependency,
@@ -101,47 +105,69 @@ class BookieCompiler(
     }
 
     fun exportProjectToFlask(contentsPage: Path, outputPath: Path, bookTitle: String = "Book"): Path {
-        val contentsCompilationData = getFrontMatterCompilationModel(contentsPage, outputPath, bookTitle, true)
-        compileModelToFlask(contentsCompilationData.first)
-        contentsCompilationData.second.referencedChapters?.let { ci ->
-            val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
-            IDCreator.resetCounters()
-            compileChapters(ci.toList(), chapterModels, outputPath, buildForFlask = true)
-            chapterModels.forEach {
-                compileModelToFlask(it.value)
+        var resourceCount: Int
+        val compilationTime = measureTimeMillis {
+            val contentsCompilationData = getFrontMatterCompilationModel(contentsPage, outputPath, bookTitle, true)
+            compileModelToFlask(contentsCompilationData.first)
+            resourceCount = contentsCompilationData.second.referencedChapters?.size ?: 0
+            contentsCompilationData.second.referencedChapters?.let { ci ->
+                val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
+                IDCreator.resetCounters()
+                compileChapters(ci.toList(), chapterModels, outputPath, buildForFlask = true)
+                chapterModels.forEach {
+                    compileModelToFlask(it.value)
+                }
+                if (!(outputPath / "static" / "ace_editor").exists())
+                    decompressZipFile("ace_editor.zip", outputPath / "static")
+                EventManager.projectFilesAdded.publishEvent(
+                    listOf(FileStorage.makeTree(outputPath)) + chapterModels.keys.map { FileStorage.makeTree(it) }
+                )
+                val appFile = buildFlaskIndexFile(chapterModels.values.toList())
+                (outputPath / "app.py").writeText(appFile)
+                val filesToCopy = listOf(
+                    "requirements.txt", "bookie.properties", "install.bat", "install.sh",
+                    "start.bat", "start.sh"
+                )
+                filesToCopy.forEach { copyTextResource(it, "flask/", outputPath) }
             }
-            if (!(outputPath / "static" / "ace_editor").exists())
-                decompressZipFile("ace_editor.zip", outputPath / "static")
-            EventManager.projectFilesAdded.publishEvent(
-                listOf(FileStorage.makeTree(outputPath)) + chapterModels.keys.map { FileStorage.makeTree(it) }
-            )
-            val appFile = buildFlaskIndexFile(chapterModels.values.toList())
-            (outputPath / "app.py").writeText(appFile)
-            val filesToCopy = listOf(
-                "requirements.txt", "bookie.properties", "install.bat", "install.sh",
-                "start.bat", "start.sh"
-            )
-            filesToCopy.forEach { copyTextResource(it, "flask/", outputPath) }
         }
+        EventManager.popup.publishEvent(
+            Pair(
+                "Flask export complete",
+                "Processed $resourceCount files in ${compilationTime}ms."
+            )
+        )
+        Logger.getLogger("Bookie Compiler").info("Flask export processed $resourceCount files in ${compilationTime}ms.")
         return outputPath / "index.html"
     }
 
     fun exportProject(contentsPage: Path, outputPath: Path, bookTitle: String = "Book"): Path {
-        val contentsCompilationData = getFrontMatterCompilationModel(contentsPage, outputPath, bookTitle, false)
-        compileModelToFile(contentsCompilationData.first)
-        contentsCompilationData.second.referencedChapters?.let { ci ->
-            val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
-            IDCreator.resetCounters()
-            compileChapters(ci.toList(), chapterModels, outputPath, buildForFlask = false)
-            chapterModels.forEach {
-                compileModelToFile(it.value)
+        var resourceCount: Int
+        val compilationTime = measureTimeMillis {
+            val contentsCompilationData = getFrontMatterCompilationModel(contentsPage, outputPath, bookTitle, false)
+            compileModelToFile(contentsCompilationData.first)
+            resourceCount = contentsCompilationData.second.referencedChapters?.size ?: 0
+            contentsCompilationData.second.referencedChapters?.let { ci ->
+                val chapterModels: MutableMap<Path, HTMLCompilationModel> = mutableMapOf()
+                IDCreator.resetCounters()
+                compileChapters(ci.toList(), chapterModels, outputPath, buildForFlask = false)
+                chapterModels.forEach {
+                    compileModelToFile(it.value)
+                }
+                if (!(outputPath / "ace_editor").exists())
+                    decompressZipFile("ace_editor.zip", outputPath)
+                EventManager.projectFilesAdded.publishEvent(
+                    listOf(FileStorage.makeTree(outputPath)) + chapterModels.keys.map { FileStorage.makeTree(it) }
+                )
             }
-            if (!(outputPath / "ace_editor").exists())
-                decompressZipFile("ace_editor.zip", outputPath)
-            EventManager.projectFilesAdded.publishEvent(
-                listOf(FileStorage.makeTree(outputPath)) + chapterModels.keys.map { FileStorage.makeTree(it) }
-            )
         }
+        EventManager.popup.publishEvent(
+            Pair(
+                "Local export complete",
+                 "Processed $resourceCount files in ${compilationTime}ms."
+            )
+        )
+        Logger.getLogger("Bookie Compiler").info("Local export processed $resourceCount files in ${compilationTime}ms.")
         return outputPath / "index.html"
     }
 

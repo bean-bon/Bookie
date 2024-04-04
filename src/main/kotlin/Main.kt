@@ -1,4 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,16 +9,18 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.MenuBar
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.*
 import androidx.compose.ui.zIndex
 import backend.*
 import backend.extensions.getPath
 import backend.model.ApplicationData
 import backend.model.ProjectExportDialogModel
+import jdk.jfr.Event
+import kotlinx.coroutines.delay
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.core.component.KoinComponent
@@ -34,7 +37,10 @@ import views.menu.ProjectSelectionMenuBar
 import views.viewmodels.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
+import java.awt.SystemTray
+import java.awt.TrayIcon
 import java.nio.file.Path
+import javax.management.NotificationEmitter
 import kotlin.io.path.div
 import kotlin.io.path.name
 
@@ -202,6 +208,12 @@ private val appModule = module(createdAtStart = true) {
 
 fun main() = application {
 
+    LaunchedEffect(Unit) {
+        EventManager.popup.subscribeToEvents {
+            showSystemNotification(it.first, it.second)
+        }
+    }
+
     Window(
         onCloseRequest = ::exitApplication,
         title = ApplicationData.windowTitle,
@@ -210,16 +222,29 @@ fun main() = application {
             modules(appModule)
         }) {
             Box(Modifier.fillMaxSize()) {
-                window.minimumSize = window.preferredSize
-                MenuBar {
-                    if (ApplicationData.projectDirectory != null)
-                        ProjectEditorMenuBar(this)
-                    else
-                        ProjectSelectionMenuBar(this)
+                Box(Modifier.fillMaxSize()) {
+                    window.minimumSize = window.preferredSize
+                    MenuBar {
+                        if (ApplicationData.projectDirectory != null)
+                            ProjectEditorMenuBar(this)
+                        else
+                            ProjectSelectionMenuBar(this)
+                    }
+                    Launcher()
                 }
-                Launcher()
             }
         }
     }
 
+}
+
+fun showSystemNotification(caption: String, message: String) {
+    if (SystemTray.isSupported()) {
+        val tray = SystemTray.getSystemTray()
+        val icon = TrayIcon(ImageBitmap(32, 32).toAwtImage(), "Notification")
+        tray.add(icon)
+        icon.displayMessage(caption, message, TrayIcon.MessageType.INFO)
+    } else {
+        println("System tray is not supported")
+    }
 }

@@ -1,5 +1,6 @@
 package backend
 
+import androidx.compose.ui.window.Notification
 import backend.model.FileStorage
 import views.viewmodels.HTMLCompilationModel
 import views.viewmodels.TextEditorEntryFieldModel
@@ -28,6 +29,7 @@ object EventManager {
     val compileFlaskApp = StatefulEvent<Pair<Path, String>>()
     val fileSelected = StatefulEvent<TextEditorEntryFieldModel>()
     val saveFile = StatefulEvent<TextEditorEntryFieldModel>()
+    val popup = StatefulEvent<Pair<String, String>>()
 
     val compileProjectDialog = StatelessEvent()
     val compileFlaskDialog = StatelessEvent()
