@@ -2,7 +2,6 @@ package backend.html
 
 import backend.model.ApplicationData
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.window.Notification
 import backend.EventManager
 import backend.helpers.decompressZipFile
 import backend.html.helpers.IDCreator
@@ -230,7 +229,7 @@ class BookieCompiler(
         chapterLinkInformation: ChapterLinkInformation,
         buildForFlask: Boolean = false
     ): HTMLCompilationModel? {
-        if (file.extension != "bd") return null
+        if (file.extension != "bd" || !file.exists()) return null
         val text = openFiles[file]?.textBoxContent ?: file.readText()
         val compilationData = CompilationData(file)
         val bdMarkdownFlavour = BDMarkdownFlavour(compilationData = compilationData, compileForFlask = buildForFlask)
@@ -317,27 +316,32 @@ class BookieCompiler(
         for ((blockKey, toProcess) in flavour.compilationData.deferredInlineBlocks) {
             val inlineHTML = HtmlGenerator(
                 toProcess,
-                MarkdownParser(flavour).buildMarkdownTreeFromString(toProcess),
-                flavour
+                MarkdownParser(flavour.baseFlavour).buildMarkdownTreeFromString(toProcess),
+                flavour.baseFlavour
             ).generateHtml()
             newHtml = newHtml.replace(
                 blockKey,
                 inlineHTML
+                    .removePrefix("<body><p>").removeSuffix("</p></body>")
             )
         }
-        // Replace the paragraphs with their actual content, then the placeholders
-        // within the paragraphs with the corresponding reference index if it exists.
-        for ((marker, paragraph) in flavour.compilationData.deferredParagraphs) {
-            var processed = paragraph
-            for ((refKey, index) in flavour.compilationData.referenceMap) {
-                processed = processed.replace("{$refKey}", "<a href=\"#$refKey\" aria-label=\"Hyperlink to figure $index\">$index</a>")
-            }
-            // Replace placeholder with processed content.
-            newHtml = newHtml.replace(marker, processed)
+        // Quiz answers require slightly different compilation.
+        for ((blockKey, toProcess) in flavour.compilationData.deferredQuizAnswers) {
+            val inlineHTML = HtmlGenerator(
+                toProcess,
+                MarkdownParser(flavour.baseFlavour).buildMarkdownTreeFromString(toProcess),
+                flavour.baseFlavour
+            ).generateHtml()
+            newHtml = newHtml.replace(
+                blockKey,
+                inlineHTML
+                    .removePrefix("<body>").removeSuffix("</body>")
+            )
         }
-        // Replace the templates in figures with their actual index.
+        // Replace figure reference placeholders with their actual indexes.
         for ((refKey, index) in flavour.compilationData.referenceMap) {
             newHtml = newHtml.replace("Figure {$refKey}", "Figure $index")
+            newHtml = newHtml.replace("{$refKey}", "<a href=\"#$refKey\" aria-label=\"Hyperlink to figure $index\">$index</a>")
         }
         return newHtml
     }

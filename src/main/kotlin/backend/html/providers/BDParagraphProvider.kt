@@ -15,7 +15,6 @@ import org.intellij.markdown.html.HtmlGenerator
  * referencing and KaTeX.
  * This class will only process pure paragraphs, and inlined nodes are
  * passed onto the *inlineParagraphProvider* parameter.
- * @param deferredParagraphs A map of the paragraphs being deferred, those to be deferred are added to this object.
  * @param deferredInlineBlocks A map of Markdown elements being deferred within paragraphs, those found are added to this.
  * @param chapterMarkers An optional list of chapters found in paragraphs. This should be null when chapters cannot
  * be referenced (for creation), such as from within a chapter.
@@ -23,7 +22,6 @@ import org.intellij.markdown.html.HtmlGenerator
  * @author Benjamin Groom
  */
 class BDParagraphProvider(
-    var deferredParagraphs: MutableMap<String, String>,
     var deferredInlineBlocks: MutableMap<String, String>,
     var chapterMarkers: MutableSet<ChapterInformation>? = null,
     private val inlineParagraphProvider: GeneratingProvider,
@@ -95,9 +93,7 @@ class BDParagraphProvider(
                 }
             }
         }
-        val paragraphID = IDCreator.paragraph.nextId
-        deferredParagraphs["%%$paragraphID"] = "<p tabindex=\"0\">$paragraph</p>"
-        visitor.consumeHtml("%%$paragraphID")
+        visitor.consumeHtml("<p tabindex=\"0\">$paragraph</p>")
     }
 
     /**

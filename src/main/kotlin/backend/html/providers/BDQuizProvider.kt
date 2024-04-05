@@ -10,7 +10,7 @@ import views.components.html.quizBlockTemplate
 
 class BDQuizProvider(
     private val getActiveQuestion: () -> String?,
-    private val deferredInlineBlocks: MutableMap<String, String>,
+    private val deferredQuizAnswers: MutableMap<String, String>,
     private val ulGeneratingProvider: GeneratingProvider,
 ): GeneratingProvider {
     override fun processNode(visitor: HtmlGenerator.HtmlGeneratingVisitor, text: String, node: ASTNode) {
@@ -21,7 +21,7 @@ class BDQuizProvider(
             if (question.startsWith("- ")) {
                 val qSplit = question.removePrefix("- ").split("|")
                 val explanation = qSplit.drop(1)
-                val inlineId = IDCreator.inlineBlock.nextId
+                val inlineId = IDCreator.answer.nextId
                 answersFound.add(
                     QuizAnswer(
                         answerHTMLPlaceholder = "<div class=\"answer-content\" tabindex=\"-1\">$inlineId</div>",
@@ -35,7 +35,7 @@ class BDQuizProvider(
                         correct = explanation.getOrNull(0)?.startsWith("C ") == true
                     )
                 )
-                deferredInlineBlocks[inlineId] = qSplit[0].trim()
+                deferredQuizAnswers[inlineId] = qSplit[0].trim()
             }
         }
         visitor.consumeHtml(quizBlockTemplate(activeQuestion, answersFound))

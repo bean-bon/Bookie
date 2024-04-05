@@ -10,7 +10,7 @@ import java.nio.file.Path
  * @param codeBlockMap A list of code blocks contained within the document.
  * @param resourcesUtilised A list of file resources used within the document.
  * @param headingData Data about the headings contained within the document.
- * @param deferredParagraphs Mappings from template markers for paragraphs to their Markdown content.
+ * @param deferredQuizAnswers Mappings from quiz answer inlines to their Markdown content.
  * @param deferredInlineBlocks Mappings from template markers for inline Markdown elements to their raw string content.
  * @param referenceMap Mappings from a reference ID defined in figures to the ID of the figure element it represents.
  * @param referencedChapters An optional listing of chapters defined on a page, should be null when compiling chapters.
@@ -21,8 +21,8 @@ data class CompilationData(
     val codeBlockMap: MutableList<CodeBlockHTMLData> = mutableListOf(),
     val resourcesUtilised: MutableList<Path> = mutableListOf(),
     val headingData: MutableList<HeadingData> = mutableListOf(),
-    val deferredParagraphs: MutableMap<String, String> = mutableMapOf(),
     val deferredInlineBlocks: MutableMap<String, String> = mutableMapOf(),
+    val deferredQuizAnswers: MutableMap<String, String> = mutableMapOf(),
     val referenceMap: MutableMap<String, String> = mutableMapOf(),
     val referencedChapters: MutableSet<ChapterInformation>? = null
 )

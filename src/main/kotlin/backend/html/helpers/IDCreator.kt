@@ -9,6 +9,7 @@ internal object IDCreator {
     val paragraph = IDBuilder("paragraph")
     val chapter = IDBuilder("chapter")
     val inlineBlock = IDBuilder("inline")
+    val answer = IDBuilder("answer")
     val figure = IDBuilder("figure")
 
     fun resetCounters() {

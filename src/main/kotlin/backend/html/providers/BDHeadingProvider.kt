@@ -18,25 +18,27 @@ class BDHeadingProvider(
         IDCreator.Headings.resetAllFrom(level + 1)
         IDCreator.resetFigureIfNeeded(level)
         val id = IDCreator.Headings.getBuilderFor(level)?.nextId
-        return headingContent.lastIndexOf('{').let {
+        val idBrace = headingContent.lastIndexOf('{')
+        return idBrace.let {
             if (it != -1) {
                 val htmlId = """(.+\s*)}$""".toRegex().matchAt(headingContent, it)?.groups?.first()
                 htmlId?.value
             } else null
         }?.let {
+            val index =
+                if (level < 4) IDCreator.makeSectionStringForCurrentState()
+                else ""
             headingData.add(
                 HeadingData(
-                    index =
-                        if (level < 4) IDCreator.makeSectionStringForCurrentState()
-                        else "",
+                    index = index,
                     id = it,
-                    content = headingContent.toString(),
+                    content = headingContent.dropLast(headingContent.length - idBrace).toString(),
                     level = level
                 )
             )
             visitor.consumeHtml(
                 "<h$level id=\"${it.drop(1).dropLast(1)}\" tabindex=\"0\">" +
-                        "${title?.value?.replace(it, "")?.trim()}" +
+                        "$index ${title?.value?.replace(it, "")?.trim()}" +
                         "</h$level>\n"
             )
         } ?: run {

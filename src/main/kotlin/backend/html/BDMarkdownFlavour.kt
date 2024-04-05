@@ -22,7 +22,7 @@ import java.util.logging.Logger
  * @author Benjamin Groom
  */
 class BDMarkdownFlavour(
-    private val baseFlavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
+    val baseFlavour: MarkdownFlavourDescriptor = GFMFlavourDescriptor(),
     val compilationData: CompilationData,
     val compileForFlask: Boolean = false
 ) : MarkdownFlavourDescriptor {
@@ -71,11 +71,19 @@ class BDMarkdownFlavour(
             BDHeadingProvider(level = i, headingData = compilationData.headingData),
             "ATX_$i"
         )
+        setElementGeneratorGivenKey(
+            generatorMap,
+            BDQuizProvider(
+                { activeQuizQuestion },
+                deferredQuizAnswers = compilationData.deferredQuizAnswers,
+                generatorMap[generatorMap.keys.first { it.name == "UNORDERED_LIST" }]!!
+            ),
+            "UNORDERED_LIST"
+        )
         // Paragraph provider.
         setElementGeneratorGivenKey(
             generatorMap,
             BDParagraphProvider(
-                deferredParagraphs = compilationData.deferredParagraphs,
                 deferredInlineBlocks = compilationData.deferredInlineBlocks,
                 inlineParagraphProvider = generatorMap[generatorMap.keys.first { it.name == "PARAGRAPH" }]!!,
                 chapterMarkers = compilationData.referencedChapters,
@@ -84,15 +92,6 @@ class BDMarkdownFlavour(
                 onQuizSyntaxRecognised = { activeQuizQuestion = it }
             ),
             "PARAGRAPH"
-        )
-        setElementGeneratorGivenKey(
-            generatorMap,
-            BDQuizProvider(
-                { activeQuizQuestion },
-                deferredInlineBlocks = compilationData.deferredInlineBlocks,
-                generatorMap[generatorMap.keys.first { it.name == "UNORDERED_LIST" }]!!
-            ),
-            "UNORDERED_LIST"
         )
         return generatorMap
     }

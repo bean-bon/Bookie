@@ -48,7 +48,7 @@ fun chapterTemplate(
                     id = "contents-list"
                     for (h in contents.filter { it.level <= maxContentsSectionLevel }) {
                         div(classes = "h${h.level}-contents-link") {
-                            a(href = "#${h.id}") {
+                            a(href = "#${h.id.removePrefix("{").removeSuffix("}")}") {
                                 +"${h.index} ${h.content}"
                             }
                         }

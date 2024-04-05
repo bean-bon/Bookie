@@ -124,6 +124,7 @@ private fun directory(
             fileModificationDialog(
                 model.path,
                 title = { Text("Create new Bookie file", fontWeight = FontWeight.Bold) },
+                intendedExtension = ".bd",
                 confirmText = "Create file",
                 modifyExisting = false,
                 onDismissRequest = { showNewFileDialog = false }
@@ -325,6 +326,7 @@ private fun file(
 @Composable
 fun fileModificationDialog(
     file: Path,
+    intendedExtension: String = "",
     reservedNames: List<String> = listOf(),
     title: @Composable () -> Unit,
     confirmText: String,
@@ -377,8 +379,8 @@ fun fileModificationDialog(
                         newFileName = it.replace(".", "")
                         conflictingNewFileName =
                             if (newFileName.isEmpty()) false
-                            else if (modifyExisting) (file.parent / "$newFileName$extension").exists()
-                            else (file / "$newFileName$extension").exists()
+                            else if (modifyExisting) (file.parent / "$newFileName$intendedExtension").exists()
+                            else (file / "$newFileName$intendedExtension").exists()
                         startsWithNumber = !file.isDirectory() && newFileName.firstOrNull()?.isDigit() == true
                         reservedName = newFileName in reservedNames
                     }
