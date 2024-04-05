@@ -7,6 +7,6 @@ package backend.model
  */
 data class QuizAnswer(
     val answerHTMLPlaceholder: String,
-    val explanation: String?,
+    val explanation: String,
     val correct: Boolean
 )

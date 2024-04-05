@@ -25,14 +25,13 @@ class BDQuizProvider(
                 answersFound.add(
                     QuizAnswer(
                         answerHTMLPlaceholder = "<div class=\"answer-content\" tabindex=\"-1\">$inlineId</div>",
-                        explanation =
-                            if (explanation.isNotEmpty())
-                                explanation
-                                    .joinToString("")
-                                    .removePrefix("C ")
-                                    .trim()
-                            else null,
-                        correct = explanation.getOrNull(0)?.startsWith("C ") == true
+                        explanation = explanation
+                            .joinToString("")
+                            .removePrefix("C ")
+                            .trim(),
+                        correct = explanation
+                            .getOrNull(0)
+                            ?.startsWith("C ") == true
                     )
                 )
                 deferredQuizAnswers[inlineId] = qSplit[0].trim()

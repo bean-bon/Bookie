@@ -31,16 +31,13 @@ fun quizBlockTemplate(
                     attributes["tabindex"] = "-1"
                     attributes["aria-hidden"] = "true"
                     attributes["aria-live"] = "polite"
-                    attributes["aria-label"] = "is ${if (a.correct) "correct" else "incorrect"}: ${a.explanation ?: ""}"
-                    a.explanation?.let {
-                        +it
-                    } ?: run {
-                        attributes["tabindex"] = "-1"
-                        if (a.correct) +"Correct"
+                    attributes["aria-label"] = "is ${if (a.correct) "correct" else "incorrect"}: ${a.explanation}"
+                    a.explanation.let {
+                        if (it.isNotEmpty()) +it
+                        else if (a.correct) +"Correct"
                         else +"Incorrect"
                     }
                 }
-
             }
         }
     }
