@@ -1,5 +1,4 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,9 +17,7 @@ import androidx.compose.ui.zIndex
 import backend.*
 import backend.extensions.getPath
 import backend.model.ApplicationData
-import backend.model.ProjectExportDialogModel
-import jdk.jfr.Event
-import kotlinx.coroutines.delay
+import views.viewmodels.ProjectExportDialogModel
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.core.component.KoinComponent
@@ -34,13 +31,12 @@ import views.helpers.FileDialog
 import views.helpers.SystemUtils
 import views.menu.ProjectEditorMenuBar
 import views.menu.ProjectSelectionMenuBar
-import views.viewmodels.ProjectEditorModel
+import backend.model.ProjectEditorModel
 import views.viewmodels.ProjectSelectionModel
 import java.awt.FileDialog
 import java.awt.SystemTray
 import java.awt.TrayIcon
 import java.nio.file.Path
-import javax.management.NotificationEmitter
 import kotlin.io.path.div
 import kotlin.io.path.name
 
@@ -77,7 +73,6 @@ class LauncherViewModel: KoinComponent {
  * 2. the project editor with the relevant folder selected as root.
  */
 @Composable
-@Preview
 fun Launcher(
     model: LauncherViewModel = koinInject(),
     projectExportDialogModel: ProjectExportDialogModel = koinInject(),
@@ -93,8 +88,12 @@ fun Launcher(
                         setProjectPreferences(it)
                         ProjectInitialiser.initProject(it.file, it.directory)
                     }
+                    model.projectSelectionModel.fileDialogAction = FileDialogAction.None
                 },
-                onOpenProjectDialog = { if (it.file != null) setProjectPreferences(it) }
+                onOpenProjectDialog = {
+                    if (it.file != null) setProjectPreferences(it)
+                    model.projectSelectionModel.fileDialogAction = FileDialogAction.None
+                }
             )
         } else {
             Box {

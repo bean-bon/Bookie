@@ -13,7 +13,7 @@ import backend.extensions.getPath
 import backend.helpers.readTextFromResource
 import backend.html.helpers.GenerationTracker
 import backend.model.FileStorage
-import views.viewmodels.HTMLCompilationModel
+import backend.model.HTMLCompilationModel
 import views.viewmodels.TextEditorEntryFieldModel
 import java.nio.file.Files
 import java.nio.file.Path
@@ -254,7 +254,7 @@ class BookieCompiler(
         inputPath = inputPath,
         outputRoot = outputRoot,
         relativeOutputPath = relativeOutputPath,
-        html = bookieContents(title, compiledHTML, compilationData.codeBlockMap, buildForFlask),
+        html = bookieContents(title, compiledHTML.replace("<\\?body>".toRegex(), ""), compilationData.codeBlockMap, buildForFlask),
         fileResources = compilationData.resourcesUtilised,
         codeBlockMapping = compilationData.codeBlockMap
     )
@@ -273,9 +273,7 @@ class BookieCompiler(
         outputRoot = outputRoot,
         relativeOutputPath = relativeOutputPath,
         html = chapterTemplate(
-            compiledHtml = compiledHTML
-                .replace("<body>", "")
-                .replace("</body>", ""),
+            compiledHtml = compiledHTML.replace("<\\?body>".toRegex(), ""),
             codeBlocks = compilationData.codeBlockMap,
             chapterLinkInformation = chapterLinkInformation,
             buildFlaskTemplate = buildFlaskTemplate,
@@ -349,9 +347,10 @@ class BookieCompiler(
     private fun buildFlaskIndexFile(models: List<HTMLCompilationModel>): String {
         val generatedRoutes = models.joinToString("\n\n\n") {
             val filePath = it.relativeOutputPath
+            val functionName = filePath.toString().replace(" ", "_").replace("\\|/".toRegex(), "-")
             """
                 @app.route('/$filePath')
-                def ${filePath.nameWithoutExtension.lowercase().replace(" ", "_")}():
+                def $functionName():
                     return render_template('$filePath')
             """.trimIndent()
         }

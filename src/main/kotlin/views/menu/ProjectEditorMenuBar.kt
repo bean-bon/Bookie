@@ -12,7 +12,7 @@ import backend.html.helpers.PathResolver
 import org.koin.compose.koinInject
 import views.helpers.OS
 import views.helpers.SystemUtils
-import views.viewmodels.ProjectEditorModel
+import backend.model.ProjectEditorModel
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension

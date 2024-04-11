@@ -7,7 +7,7 @@ import backend.EventManager
 import org.koin.core.component.KoinComponent
 import java.nio.file.Path
 
-object ApplicationData: KoinComponent {
+object ApplicationData {
 
     private var titleBase by mutableStateOf("Bookie Editor")
     private var flavourText by mutableStateOf<String?>(null)

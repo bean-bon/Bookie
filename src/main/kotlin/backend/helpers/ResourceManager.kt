@@ -26,6 +26,7 @@ fun decompressZipFile(resourceName: String, outputRoot: Path) = useResource(reso
 /**
  * Decompresses an InputStream (assumed to point at a zip file) to
  * the specified output path.
+ * Based on the algorithms deatiled at https://www.baeldung.com/java-compress-and-uncompress.
  */
 fun decompressZipFile(
     stream: InputStream,

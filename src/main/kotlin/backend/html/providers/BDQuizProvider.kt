@@ -32,6 +32,7 @@ class BDQuizProvider(
                         correct = explanation
                             .getOrNull(0)
                             ?.startsWith("C ") == true
+                                || explanation.getOrNull(0)?.trim() == "C"
                     )
                 )
                 deferredQuizAnswers[inlineId] = qSplit[0].trim()

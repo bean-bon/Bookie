@@ -1,6 +1,5 @@
-package views.viewmodels
+package backend.model
 
-import backend.model.ApplicationData
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,8 +12,7 @@ import backend.html.ChapterLinkInformation
 import backend.html.helpers.IDCreator
 import backend.html.helpers.PathResolver
 import org.koin.core.component.KoinComponent
-import backend.model.FileModel
-import backend.model.FileStorage
+import views.viewmodels.TextEditorEntryFieldModel
 //import backend.parsing.flavour.parseExtendedSyntax
 import java.nio.file.Files
 import java.nio.file.Path
@@ -41,7 +39,7 @@ class ProjectEditorModel(
         EventManager.compileFlaskApp.subscribeToEvents(::compileFlaskApp)
     }
 
-    var selectedFileModel: TextEditorEntryFieldModel? by mutableStateOf(selected)
+    var selectedFileModel by mutableStateOf(selected)
         private set
 
     // Text editor fields.

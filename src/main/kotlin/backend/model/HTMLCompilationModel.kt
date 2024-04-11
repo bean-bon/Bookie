@@ -1,4 +1,4 @@
-package views.viewmodels
+package backend.model
 
 import backend.html.helpers.CodeBlockHTMLData
 import java.nio.file.Path

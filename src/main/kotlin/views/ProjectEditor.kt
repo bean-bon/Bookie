@@ -11,7 +11,7 @@ import backend.model.DirectoryModel
 import backend.model.FileStorage
 import views.editor.FileTree
 import views.editor.TextEditor
-import views.viewmodels.ProjectEditorModel
+import backend.model.ProjectEditorModel
 import views.viewmodels.TextEditorViewModel
 
 @Composable
@@ -19,8 +19,6 @@ fun ProjectEditor(
     model: ProjectEditorModel,
     onLoad: () -> Unit,
 ) {
-
-    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(ApplicationData.projectDirectory) {
         onLoad()
