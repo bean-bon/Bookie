@@ -184,7 +184,7 @@ private fun directory(
                 Row(
                     Modifier
                         .clickable { isExpanded = !isExpanded }
-                        .background(if (externalDrag) Color.Blue else Color.Unspecified)
+                        .background(if (externalDrag) MaterialTheme.colors.onBackground else Color.Unspecified)
                         .onExternalDrag(
                             onDrag = {
                                 externalDrag = true
